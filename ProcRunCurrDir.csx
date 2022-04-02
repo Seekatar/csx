@@ -1,5 +1,5 @@
 using static System.Console;
-var args = "-noprofile -c cd \\temp; dir";
+var args = "-noprofile -c cd /temp/t/junk/src/CCC.CAS.WidgetApi; dotnet run";
 var command = "powershell";
 
 ProcessStartInfo psi = new ProcessStartInfo(command, args)
@@ -8,6 +8,7 @@ ProcessStartInfo psi = new ProcessStartInfo(command, args)
 };
 
 Process p = Process.Start(psi);
+WriteLine($"PID is  {p.Id}");
 p.WaitForExit();
 WriteLine($"Exit code is {p.ExitCode}");
 
