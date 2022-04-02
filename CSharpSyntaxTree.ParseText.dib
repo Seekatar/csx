@@ -1,0 +1,32 @@
+#!csharp
+
+using Microsoft.CodeAnalysis.CSharp;
+using System;
+
+// up to semicolon token
+// IdentifierToken, NumericLiteralToken, StringLiteralToken             
+// for bool allowed <,<=.>,>=,==,!=,(),|| && +=*/
+// for expression x = .... +=*/ ()
+var text = "(a_b < 20) || (b < 30);";
+ text = "a_b = a_b * 30;";
+ text = "a_b = a_b.Contains(\"asdf\");";
+
+var tree = CSharpSyntaxTree.ParseText(text);
+var diag = tree.GetDiagnostics();
+if (diag.Any()) {
+    foreach (var x in diag) {
+        Console.WriteLine(x);
+    }
+} else {
+
+    var root = tree.GetRoot();
+    Console.WriteLine(root.ToString());
+    foreach (var token in root.DescendantTokens())
+    {
+        // Kinds https://docs.microsoft.com/en-us/dotnet/api/microsoft.codeanalysis.csharp.syntaxkind?view=roslyn-dotnet-4.1.0
+        
+        Console.WriteLine($"   {token.Kind(),-30} {token.Text}");
+    }
+}
+
+var dict = new Dictionary<string,object>() { {"a",1}};
