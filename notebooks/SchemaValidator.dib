@@ -1,0 +1,68 @@
+#!markdown
+
+# Json Schema Validators
+
+> NOTE these have conflicting NewtonSoft nuget libraries, so once you run one, you have to reload to run the other.
+
+#!csharp
+
+#r "nuget:NJsonSchema"
+
+using NJsonSchema;
+using System.IO;
+using static System.Console;
+using System.Text.Json;
+
+var inputFile = "/Users/jwallace/code/ConditionalForms/src/test/test-input/value-validation-test.json";
+var schemaFile = "/Users/jwallace/code/ConditionalForms/src/test/test-input/cf-schema.json";
+schemaFile = "/Users/jwallace/code/ConditionalForms/src/test/test-input/cf-schema2.json";
+
+var schema = await JsonSchema.FromJsonAsync(File.ReadAllText(schemaFile));
+WriteLine("GOto schema");
+
+var errors = schema.Validate(File.ReadAllText(inputFile));
+
+foreach (var error in errors)
+    Console.WriteLine($"{error.Path}: {error.Kind} '{error.Property}' {error.LineNumber} {error.LinePosition}");
+    //WriteLine(JsonSerializer.Serialize(error, new JsonSerializerOptions() { }));
+
+#!csharp
+
+#r "nuget:Newtonsoft.Json,12.0.3"
+#r "nuget:Newtonsoft.Json.Schema,3.0.13"
+
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
+using System.Collections.Generic;
+using System.IO;
+using static System.Console;
+
+var inputFile = "/Users/jwallace/code/ConditionalForms/src/test/test-input/value-validation-test.json";
+var schemaFile = "/Users/jwallace/code/ConditionalForms/src/test/test-input/cf-schema.json";
+//schemaFile = "/Users/jwallace/code/ConditionalForms/src/test/test-input/cf-schema2.json";
+
+string schemaJson = schemaFile;
+string file = inputFile;
+
+if (!File.Exists(schemaJson) || !File.Exists(file)) {
+    WriteLine("Must enter existing file for --schema-json and --file to validate. Got:");
+    WriteLine($"     {schemaJson}");
+    WriteLine($"     {file}");
+    return;
+}
+JSchema schema = JSchema.Parse(File.ReadAllText(schemaJson));
+JToken json = JToken.Parse(File.ReadAllText(file));
+
+bool valid = json.IsValid(schema, out IList<string> messages);
+if (!valid)
+{
+    WriteLine("Invalid!");
+    foreach( var i in messages)
+    {
+        WriteLine($"   {i}");
+    }
+}
+else
+{
+    WriteLine("valid");
+}

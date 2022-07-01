@@ -1,0 +1,30 @@
+#!csharp
+
+using static System.Console;
+using System.Text.RegularExpressions;
+
+Regex daysRegex = new("^(-?\\d+)d");
+Regex noCapture = new("^-?\\d+d");
+var matches = daysRegex.Matches("10d");
+WriteLine(matches[0].Groups[1]);
+WriteLine(daysRegex.IsMatch("30d"));
+WriteLine(daysRegex.IsMatch("d"));
+WriteLine(noCapture.IsMatch("30d"));
+WriteLine(noCapture.IsMatch("d"));
+WriteLine(DateTime.UtcNow + TimeSpan.FromDays(Convert.ToInt32(matches[0].Groups[1].Value)));
+
+matches = daysRegex.Matches("-10d");
+WriteLine(matches[0].Groups[1]);
+WriteLine(DateTime.UtcNow + TimeSpan.FromDays(Convert.ToInt32(matches[0].Groups[1].Value)));
+
+matches = daysRegex.Matches("d");
+if (matches.Count > 0 )
+    WriteLine(matches[0].Groups[1]);
+else 
+    WriteLine("No");
+
+matches = daysRegex.Matches("");
+if (matches.Count > 0 )
+    WriteLine(matches[0].Groups[1]);
+else 
+    WriteLine("No");

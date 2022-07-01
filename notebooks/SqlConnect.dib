@@ -1,0 +1,22 @@
+#!markdown
+
+# test
+
+#!csharp
+
+#r nuget:System.Data.SqlClient
+
+// FAILS to connect since has encryption in the connection string
+var client = "Server=tcp:loyal-dev-p2-sql1.database.windows.net,1433;Initial Catalog=LoyalClient2;Persist Security Info=False;User ID=patient.user;Password=FYGddr9CNVls3TY5zuBNGuEF6d2VMP94;Encrypt=True;Column Encryption Setting=enabled;Attestation Protocol=AAS;Enclave Attestation Url=https://loyalattest.eus.attest.azure.net";
+
+
+var conn1 = new System.Data.SqlClient.SqlConnection(client);
+
+#!csharp
+
+#r nuget:Microsoft.Data.SqlClient
+
+// WORKS
+var client = "Server=tcp:loyal-dev-p2-sql1.database.windows.net,1433;Initial Catalog=LoyalClient2;Persist Security Info=False;User ID=patient.user;Password=FYGddr9CNVls3TY5zuBNGuEF6d2VMP94;Encrypt=True;Column Encryption Setting=enabled;Attestation Protocol=AAS;Enclave Attestation Url=https://loyalattest.eus.attest.azure.net";
+
+var conn1 = new Microsoft.Data.SqlClient.SqlConnection(client);

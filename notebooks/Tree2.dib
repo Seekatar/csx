@@ -1,0 +1,136 @@
+#!csharp
+
+using static System.Console;
+
+class Node
+{
+    static int depth = 0;
+    public Node() {}
+    public void Traverse(Tree n)
+    {
+        depth++;
+        if (depth > 100) {
+            WriteLine("depth > 100");
+            return;
+        }
+        foreach ( var c in n.Children )
+        {
+            var Node = new Node();
+            Node.Parents.Add(this);
+            Node.Traverse(c);
+        }
+    }
+    public List<Node> Parents = new();
+    public int MaxDepth = 0;
+    public string Name { get; set; }
+}
+
+class Tree {
+    public Tree(string n) {
+        Name = n;
+    }
+    public string Name { get; set; }
+    public List<Tree> Children = new();
+    public Tree AddChild(Tree child)
+    {
+        Children.Add(child);
+        return this;
+    }
+    public int MaxDepth = 0;
+    
+    public void Dump() {
+        WriteLine("-----------------");
+        Dump("");
+    }
+
+    public void Dump(string indent)
+    {
+        WriteLine($"{indent}{Name} ({indent.Length}) {MaxDepth}");
+        foreach (var child in Children)
+        {
+            child.Dump($"{indent} ");
+        }
+    }
+
+    public int CalcMax(int depth = 0)
+    {
+        if (Children.Count == 0)
+        {
+            MaxDepth = depth;
+            return depth;
+        }
+        foreach (var child in Children)
+        {
+            MaxDepth = Math.Max(MaxDepth, child.CalcMax()+1);
+        }
+        return MaxDepth;
+    }
+}
+
+var fakeRoot = new Tree("fakeRoot")
+    .AddChild(new Tree("Root")
+        .AddChild(new Tree("Node1")
+            .AddChild(new Tree("R1")
+                .AddChild(new Tree("R1.1")))
+        .AddChild(new Tree("L1")
+            .AddChild(new Tree("L2")
+                .AddChild(new Tree("L3")
+                    .AddChild(new Tree("L3.1 - Leaf"))
+                    .AddChild(new Tree("L3.2")
+                        .AddChild(new Tree("L3.2.1 - Leaf"))
+                        )
+                    ) 
+                )
+            )
+        )
+    );
+
+
+fakeRoot.CalcMax();
+fakeRoot.Dump();
+
+fakeRoot = new Tree("fakeRoot")
+    .AddChild(new Tree("Root")
+        .AddChild(new Tree("Node1")
+            .AddChild(new Tree("R1")
+            )
+        )
+    );
+fakeRoot.CalcMax();
+fakeRoot.Dump();
+
+var commonEnd = new Tree("end");
+
+fakeRoot = new Tree("fakeRoot")
+    .AddChild(new Tree("ARoot")
+        .AddChild(new Tree("ANode1")
+            .AddChild(new Tree("AR1").AddChild(commonEnd))
+        )
+    )
+    .AddChild(new Tree("BRoot").AddChild(commonEnd));
+    ;
+fakeRoot.CalcMax();
+fakeRoot.Dump();
+
+
+var mid = new Tree("mid")
+                        .AddChild(new Tree("midL1")
+                            .AddChild(new Tree("midL2")
+                                .AddChild(commonEnd))
+                            )
+                        .AddChild(new Tree("midR1")
+                            .AddChild(commonEnd)
+                            );
+                        
+
+fakeRoot = new Tree("fakeRoot")
+    .AddChild(new Tree("ARoot")
+        .AddChild(new Tree("ANode1")
+            .AddChild(new Tree("AR1").AddChild(mid))
+        )
+    )
+    .AddChild(new Tree("BRoot").AddChild(mid));
+    ;
+fakeRoot.CalcMax();
+fakeRoot.Dump();
+    

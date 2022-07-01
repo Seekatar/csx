@@ -1,0 +1,72 @@
+#!csharp
+
+#nullable disable
+using System;
+using System.Text.Json.Serialization;
+using System.Text.Json;
+using static System.Console;
+
+public class EncryptionUtil
+{
+    public static byte[] Encrypt(byte [] input ) { return input; }
+}
+
+public abstract class Topic
+{
+    // set by the producer
+    [JsonIgnore(Condition =  JsonIgnoreCondition.WhenWritingDefault)]
+    public string MessageId { get; set; } = null;
+    // set by the producer
+    [JsonIgnore(Condition =  JsonIgnoreCondition.WhenWritingDefault)]
+    public string MessageProducerName { get; set; } = default;
+    // set by the producer
+    [JsonIgnore(Condition =  JsonIgnoreCondition.WhenWritingDefault)]
+    public int SchemaVersion { get; set; }
+    // set by the producer
+    [JsonIgnore(Condition =  JsonIgnoreCondition.WhenWritingDefault)]
+    public DateTimeOffset ProducedAt { get; set; }
+
+    [JsonIgnore(Condition =  JsonIgnoreCondition.WhenWritingDefault)]
+    public string Key { get; set; }
+
+    protected Topic()
+    {
+        Key = null;
+        SchemaVersion = 1;
+    }
+}
+
+public class ProducerTopic
+{
+    public string MessageId { get; init; }
+    public string MessageProducerName { get; init; }
+    public int SchemaVersion { get; init; }
+    public DateTimeOffset ProducedAt { get; init; }
+    public string Key { get; init; }
+    public byte[] Value { get; init; }
+
+    public ProducerTopic(Topic src, string serviceName, int schemaVersion)
+    {
+        MessageId = Guid.NewGuid().ToString();
+        MessageProducerName = serviceName;
+        SchemaVersion = schemaVersion;
+        ProducedAt = DateTimeOffset.Now;
+
+        Key = src.Key;
+        Value = EncryptionUtil.Encrypt(JsonSerializer.SerializeToUtf8Bytes(src,src.GetType()));
+    }
+}
+
+class MyTopic : Topic {
+    public string A { get; set; } = "test";
+}
+var message = new MyTopic() { MessageId = "123" };
+
+WriteLine($">>> {message.MessageProducerName} {message.MessageProducerName is null}");
+WriteLine(JsonSerializer.Serialize(message));
+message.MessageId = null;
+WriteLine(JsonSerializer.Serialize(message));
+
+var pt = new ProducerTopic(message, "server", 1);
+
+WriteLine(JsonSerializer.Serialize(pt));

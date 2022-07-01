@@ -1,0 +1,89 @@
+#!csharp
+
+using static System.Console;
+using System.Text.RegularExpressions;
+
+private string StringFormatRegex = "(?<!{){[A-Za-z]+}";
+string TryFormat1(string message, params object?[]? args)
+{
+    if (args is null || !message.Contains('{')) return message;
+
+    var msg = "";
+    var i = 0;
+    do
+    {
+        msg = message;
+        message = Regex.Replace(message, StringFormatRegex, $"$1{{{i++}}}", RegexOptions.Compiled);
+        WriteLine($"{msg}  => {message}");
+        i++;
+    }
+    while (msg != message);
+
+    return string.Format(message, args);
+}
+
+string TryFormat(string message, params object?[]? args)
+{
+    if (args is null || !message.Contains('{')) return message;
+    var i = 0;
+    var me = new MatchEvaluator((match) => $"{(match.Groups.Count > 1 ? match.Groups[1]: "")}{{{i++}}}");
+    try {
+        return string.Format(Regex.Replace(message, StringFormatRegex, me), args);
+    } catch {
+        return message;
+    }
+}
+
+WriteLine(TryFormat("this is a test"));
+WriteLine(TryFormat("this is a {test} {next} {{hi}} {next}", "first", 2, DateTime.Now));
+WriteLine(TryFormat("{test}", "first"));
+WriteLine(TryFormat("{{test} {f}", "first"));
+WriteLine(TryFormat("another {{test}} {but}", "first"));
+WriteLine(TryFormat("another {0} {1}", "first", 2));
+
+WriteLine();
+// negative test
+WriteLine(TryFormat("another {{test}", "first"));  // no closing }}
+WriteLine(TryFormat("another {test} {one} {three}", "first", 1)); // too few args
+WriteLine(TryFormat("{test", "first", 1)); // missing }
+
+#!csharp
+
+using static System.Console;
+using System.Text.RegularExpressions;
+
+ var StringFormatRegex = new Regex("{{(\\w+)}}");
+
+var name = new Dictionary<string, string>
+{
+    {"name", "John"},
+    {"last", "Doe"},
+};
+var msgs = "this {{name}} is a {{test} {of}} {formatting}  {{last}} {{hmm}}";
+
+string ReplaceTokens(string msg, Regex regex, Func<string, string> findToken)
+{
+    MatchCollection matches = regex.Matches(msg);
+
+    int i = 0;
+    while (matches.Count > 0) 
+    {
+        if (i++ > 10) { WriteLine("oops!"); break; }
+        WriteLine(i);
+        var token = matches[0].Groups[1].Value;
+        
+        msg = msg.Replace(matches[0].Groups[0].Value, findToken(token));
+
+        matches = regex.Matches(msg);
+    } 
+    return msg;
+}
+
+msgs = ReplaceTokens(msgs, StringFormatRegex, (token) => {
+    return name.TryGetValue(token, out var value) ? value : "unknown";
+});
+WriteLine($"Msg is >{msgs}<");
+msgs = ReplaceTokens("{{what  }}", StringFormatRegex, (token) => {
+    return name.TryGetValue(token, out var value) ? value : "unknown";
+});
+WriteLine($"Msg is >{msgs}<");

@@ -1,0 +1,72 @@
+#!csharp
+
+using System.Collections.Generic;
+using static System.Console;
+
+class A {
+    public int a = 12;
+    public string b = "test";
+    public Dictionary<string,Func<A,object>> f = new () { {"a",(aa)=> aa.a }, {"b", (aa)=>aa.b}};
+}
+
+var a = new A();
+WriteLine(a.f["a"](a));
+WriteLine(a.f["b"](a));
+a.a = 123;
+a.b = "reset";
+
+WriteLine(a.f["a"](a));
+WriteLine(a.f["b"](a));
+
+
+public interface ISurvey{
+
+}
+public class SurveyBase<T> where T : SurveyBase<T>, ISurvey
+{
+    protected Dictionary<string, Func<T, object>> _getters = new();
+    public TRet GetValue<TRet>(string name)
+    {
+        return (TRet)_getters[name]((T)this);
+    }
+
+    public delegate void CalculationMethod(Dictionary<string, object> values);
+
+    protected readonly List<(string name, CalculationMethod method)> _preCalculationDelegates = new();
+    public void RunPreCalculations(Dictionary<string, object> variables)
+    {
+        foreach (var d in _preCalculationDelegates)
+        {
+            d.method(variables);
+        }
+    }
+
+}
+
+class S : SurveyBase<S>, ISurvey
+{
+    public int a = 12;
+    public string b = "test";
+    public void DoIt(Dictionary<string, object> values)
+    {
+        WriteLine("Done!");
+    }
+    public S()
+    {
+        _getters["a"] = (s) => s.a;
+        _getters["b"] = (s) => s.b;
+        _preCalculationDelegates.Add(("test",DoIt));
+    }
+
+}
+S s = new();
+
+WriteLine(s.GetValue<string>("b"));
+WriteLine(s.GetValue<int>("a"));
+s.a = 123;
+s.b = "erasr";
+
+WriteLine(s.GetValue<string>("b"));
+WriteLine(s.GetValue<int>("a"));
+Dictionary<string, object> values = new ();
+s.RunPreCalculations(values);

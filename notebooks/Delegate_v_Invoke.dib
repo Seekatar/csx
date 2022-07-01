@@ -1,0 +1,51 @@
+#!csharp
+
+using System.Diagnostics;
+using static System.Console;
+
+public class Survey
+{
+    public static bool a_lessThan_30(Dictionary<string, object> values)
+    {
+        return Convert.ToInt32(values["a"]) < 30;
+    }
+    public static bool a_is_a_times_100(Dictionary<string, object> values)
+    {
+        values["a"] = Convert.ToInt32(values["a"]) * 100;
+        return true;
+    }
+    public static bool set_a_to_20(Dictionary<string, object> values)
+    {
+        values["a"] = 20;
+        return true;
+    }
+}
+
+delegate bool expressionMethod(Dictionary<string,object> values);
+
+var values = new Dictionary<string,object>() { {"a", 10}};
+var _type = typeof(Survey);
+var expressionName = "a_lessThan_30";
+int count = 1000000;
+
+    var method = _type.GetMethod(expressionName);
+    if (method is null) throw new ArgumentException();
+
+    Stopwatch sw;
+
+    sw = Stopwatch.StartNew();
+    var delegate2 = Delegate.CreateDelegate(typeof(expressionMethod), method) as expressionMethod;
+    if (delegate2 is null) throw new ArgumentException();
+
+    for (int i = 0; i < count; i++) {
+        delegate2(values);
+    }
+    sw.Stop();
+    WriteLine($"delegate took {sw.ElapsedMilliseconds}ms");
+
+    sw = Stopwatch.StartNew();
+    for (int i = 0; i < count; i++) {
+        var x = (bool)(method.Invoke(null, new object?[] {values}) ?? false);
+    }
+    sw.Stop();
+    WriteLine($"Invoke took {sw.ElapsedMilliseconds}ms");

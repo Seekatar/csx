@@ -1,0 +1,17 @@
+#!csharp
+
+using System.Net.Http;
+using static System.Console;
+
+var _httpClient = new HttpClient();
+var _uriPrefix = "https://localhost:7299";
+
+var clientId = "test";
+var marketEntityId = 1;
+var formId = "e7943758-f3e5-4440-90c9-530ec6b0928d";
+
+// $statusCode,$form = Invoke-FormApi "api/v1/$($client.ClientId)/$($client.MarketEntityId)/form-configuration/$($addedForm.Id)" `
+
+var response = await _httpClient!.GetStringAsync($"{_uriPrefix}/api/v1/{clientId}/{marketEntityId}/form-configuration/{formId}");
+
+WriteLine($"Response is {response}");

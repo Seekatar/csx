@@ -1,0 +1,35 @@
+#!csharp
+
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using static System.Console;
+
+var text = "a * 30";
+
+var tree = CSharpSyntaxTree.ParseText(text+";");
+var diag = tree.GetDiagnostics().ToList();
+if (diag.Any()) {
+    WriteLine(">>>>>>>>>>>>>>>>>>>>>> ERRORS");
+    foreach (var d in diag) {
+        WriteLine(d);
+    }
+    WriteLine(">>>>>>>>>>>>>>>>>>>>>> ERRORS");
+} 
+
+var root = tree.GetRoot();
+
+WriteLine(root.ToString());
+foreach (var token in root.DescendantTokens())
+{
+    // Kinds https://docs.microsoft.com/en-us/dotnet/api/microsoft.codeanalysis.csharp.syntaxkind?view=roslyn-dotnet-4.1.0
+    WriteLine($"   {token.Kind(),-30} {token.Text}");
+}
+
+WriteLine(false.ToString());
+WriteLine(DateOnly.FromDateTime(DateTime.Parse("12/12/2022 00:00:00")));
+var a = "1,2,3"?.ToString()?.Split(',')?.Select(o => Convert.ToInt32(o)).ToList() ?? new List<int>();
+
+WriteLine(string.Join(",",a));
+WriteLine(string.Join(",",new List<int>()));
+
+WriteLine((int)(double)12.123);

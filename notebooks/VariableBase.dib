@@ -1,0 +1,53 @@
+#!csharp
+
+class VariableBaseBase 
+{
+    public virtual object ObjectValue {get; }
+}
+
+abstract class VariableBase<T> 
+{
+    public T Value { get; set; }
+    public static implicit operator T(VariableBase<T> d) => d.Value;
+    // public static implicit operator VariableBase<T>(T d) => d;
+
+}
+
+class StringValue: VariableBase<string>
+{
+    public virtual object ObjectValue => Value;
+}
+
+class IntValue: VariableBase<int>
+{
+    public virtual object ObjectValue => Value;
+}
+
+class DateValue: VariableBase<DateTime>
+{
+    public virtual object ObjectValue => Value;
+}
+
+
+Dictionary<string,object> d = new ();
+
+List<VariableBaseBase> l = new();
+
+StringValue s = new () { Value = "test" };
+IntValue i = new () { Value = 12 };
+DateValue dd = new () { Value = DateTime.Now };
+
+d["s"] = s.Value;
+d["i"] = i.Value;
+d["d"] = dd.Value;
+
+int q = i.Value + 32;
+q = i + 32;
+// NO i += 10;
+
+Console.WriteLine($"q is {q} i is {i.Value}");
+
+foreach( var v in d) {
+    Console.WriteLine($"{v.Key} => {v.Value} {v.Value.GetType().Name}");
+
+}

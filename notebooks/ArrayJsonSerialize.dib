@@ -1,0 +1,18 @@
+#!csharp
+
+using System.Text.Json;
+using System.Linq;
+using static System.Console;
+
+var o = JsonSerializer.Deserialize("[1,2,3]", typeof(object));
+Console.WriteLine(o.GetType());
+var je = (JsonElement)o;
+WriteLine(je.ValueKind);
+WriteLine($"Len = {je.GetArrayLength()}");
+var a = je.EnumerateArray().Select(o => o.GetInt32());
+foreach ( var x in a ) WriteLine(x);
+
+
+//"1,2".ToString()?.Split(',')?.Select(o => Convert.ToInt32(o)).ToList();
+
+// Convert.ToInt32("")
