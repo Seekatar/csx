@@ -1,0 +1,49 @@
+#!csharp
+
+var x = "this is a test set in C#";
+Console.WriteLine($"x is csharp is {x}");
+
+#!pwsh
+
+Write-Host "x is powerShell is $x"
+
+#!javascript
+
+console.log(`x in javascript is ${x}`)
+
+#!csharp
+
+#!share --from csharp x
+
+Console.WriteLine($"x is csharp is {x}");
+
+#!pwsh
+
+#!share --from csharp x
+
+Write-Host "x in PowerShell $x"
+
+#!javascript
+
+#!share --from csharp x
+
+console.log(`x in javascript is ${x}`)
+
+#!csharp
+
+#!share --from csharp x
+
+#!html
+
+<h1>Test</h1>
+<div id="test"></div>
+
+#!javascript
+
+let value = await interactive.csharp.getVariable('x')
+document.getElementById("test").innerHtml = value
+
+#!javascript
+
+let value = await interactive.csharp.getVariable('x')
+document.getElementById("test").innerHtml = value
