@@ -1,0 +1,151 @@
+#!markdown
+
+### Get Strings from JSON
+
+#!pwsh
+
+$ErrorActitionPreference = "stop"
+
+$form = gc -raw /Users/jwallace/code/ConditionalForms/src/test/test-input/hra-heart-health.json | convertfrom-json -depth 10
+
+$strings = @{}
+$guid = [Guid]::Empty
+
+function setString($theValue,$name) {
+    if (!$name) {
+        $name = $theValue
+    }
+    if (!$theValue) {
+        $strings["<empty>"] = "empty";    
+    } else {
+        if ( ![Guid]::TryParse($theValue, [ref] $guid ) ) {
+            $strings[$theValue] = $name;
+        }
+    }
+}
+
+foreach ( $s in $form.steps )
+{
+    setString $s.nameId "hra_$($s.Name)_step"
+    if (Get-Member -Input $s -Name "nextText") {
+        setString $s.nextText
+    }
+    if (Get-Member -Input $s -Name "backText") {
+        setString $s.backText
+    }
+    foreach ( $v in $s.values) 
+    {
+        setString $v.displayName $v.name
+        switch ($v.type) {
+            "singleSelect" {
+                foreach ( $o in $v.options) 
+                {
+                    setString $o.label
+                }
+            }
+            "multiSelect" {
+                foreach ( $o in $v.options) 
+                {
+                    setString $o.label
+                }
+            }
+            "bool" {
+                setString $o.trueLabel
+                setString $o.falseLabel
+            }
+            "singleConditionalSelect" {
+                foreach ( $co in $v.conditionalOptions) 
+                {
+                    foreach ( $o in $co.options) 
+                    {
+                        setString $o.label
+                    }
+                }
+            }
+        }
+    }
+}
+"name,value" | Out-File ~/temp/strings.csv -Encoding utf8 
+foreach ($kv in $strings.GetEnumerator() ) {
+    "$($kv.value),`"$($kv.name)`""  | Out-File ~/temp/strings.csv -Encoding utf8 -append
+}
+
+#!markdown
+
+### Set Strings from Db
+
+#!pwsh
+
+$strings = Invoke-Sqlcmd -Database TransparentlyClient2 -Username sa -Password $env:local_sa_pw -ServerInstance localhost -Query "select Id, Value from  Language.Strings where languageCode = 'en'"
+
+$ErrorActionPreference = "stop"
+
+$form = gc -raw ~/temp/hra-heart-health.json | convertfrom-json -depth 10
+
+function setString($theValue) {
+    $ret = $theValue
+    if ( ![Guid]::TryParse($theValue, [ref] $guid ) ) {
+        $v = $strings | Where-Object { $_.value -eq $theValue }
+        if ($v -eq $null) {
+            Write-Warning "Didn't find '$theValue'"
+            $ret = "5ba36eaf-cf3a-4485-a716-3ba235d00053" # empty??
+        } else {
+            if ($v -is 'array') {
+                Write-Warning "Multiple matches for $theValue"
+                $v = $v[0]
+            }
+            $ret = $v.id
+        }
+    }   
+    return $ret
+}
+
+$strings | ? { $_.value -eq '' } | Out-Host
+
+foreach ( $s in $form.steps )
+{
+    # Write-Host "$($s.name)"
+    $s.nameId = setString $s.nameId
+    if (Get-Member -Input $s -Name "nextText") {
+        $s.nextText = setString $s.nextText
+    }
+    if (Get-Member -Input $s -Name "backText") {
+        $s.backText = setString $s.backText
+    }
+    foreach ( $v in $s.values) 
+    {
+        # Write-Host "    $($v.name) $($v.type) value"
+        $v.displayName = setString $v.displayName $v.name
+        switch ($v.type) {
+            "singleSelect" {
+                foreach ( $o in $v.options) 
+                {
+                    # Write-Host ">>>>$($o.label)"
+                    $o.label = setString $o.label
+                }
+            }
+            "multiSelect" {
+                foreach ( $o in $v.options) 
+                {
+                    # Write-Host ">>>>$($o.label)"
+                    $o.label = setString $o.label
+                }
+            }
+            "bool" {
+                $v.trueLabel = setString $v.trueLabel
+                $v.falseLabel = setString $v.falseLabel
+            }
+            "singleConditionalSelect" {
+                foreach ( $co in $v.conditionalOptions) 
+                {
+                    foreach ( $o in $co.options) 
+                    {
+                        $o.label = setString $o.label
+                    }
+                }
+            }
+        }
+    }
+}
+
+$form | ConvertTo-Json -Depth 10 | Out-File ~/temp/form.json

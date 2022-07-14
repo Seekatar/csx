@@ -1,0 +1,14 @@
+#!pwsh
+
+$user = 'sa'
+$pw = $env:local_sa_pw 
+$server = 'localhost'
+$query = "select configuration from forms.FormsConfigurationView where formid = '662c0000-6296-5e75-87c0-08da64cf7698' and version = 2"
+
+# $user = 'tuser@loyaldevsql'
+# $pw = 'transparently#314159'
+# $server = 'loyaldevsql.database.windows.net'
+
+$config = Invoke-Sqlcmd -Database TransparentlyClient2 -Username $user -Password $pw -ServerInstance $server -Query $query  -MaxCharLength 32000
+$config.configuration
+$config.configuration | out-file ~/temp/junklocal.json
