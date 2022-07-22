@@ -1,3 +1,9 @@
+#!markdown
+
+#### Determine Max Depth
+
+This calculates the max depth for any given node in the graph
+
 #!csharp
 
 using static System.Console;

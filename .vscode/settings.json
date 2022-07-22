@@ -19,7 +19,13 @@
         "statusBar.border": "#7788d7",
         "statusBarItem.remoteBackground": "#7788d7",
         "statusBarItem.remoteForeground": "#15202b",
-        "titleBar.border": "#7788d7"
+        "titleBar.border": "#7788d7",
+        "editorGroup.border": "#9eaae3",
+        "panel.border": "#9eaae3",
+        "sideBar.border": "#9eaae3",
+        "statusBar.debuggingBackground": "#d7c677",
+        "statusBar.debuggingBorder": "#d7c677",
+        "statusBar.debuggingForeground": "#15202b"
     },
     "peacock.color": "#7788d7"
 }
