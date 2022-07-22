@@ -1,3 +1,7 @@
+#!markdown
+
+#### Compare Delegate vs Invoke Performance
+
 #!csharp
 
 using System.Diagnostics;
