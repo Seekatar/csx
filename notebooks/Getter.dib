@@ -1,0 +1,32 @@
+#!csharp
+
+using static System.Console;
+#nullable enable
+
+class TFormBase {
+    public int? step2__b { get; set; }
+    public int? SetValueFrom(Getter g) => GetValue<int?>(g);
+    public int? SetValueFromGetNullRef(Getter g) => GetValue<int>(g);
+    public TRet? GetValue<TRet>(Getter g)
+    {
+        return (TRet?) g.Get(this);
+    }
+}
+
+class Getter
+{
+    public Getter(Func<TFormBase, object?> getIt, bool isSensitive)
+    {
+        Get = getIt;
+        IsSensitive = isSensitive;
+    }
+    public Func<TFormBase, object?> Get { get; init; }
+    public bool IsSensitive { get; init; }
+}
+
+
+var form = new TFormBase();
+var x = new Getter((me) => me.step2__b, false);
+WriteLine($"x is {x.Get(form)} is null is {form.step2__b is null}");
+WriteLine($"SetValueFrom got {form.SetValueFrom(x)}");
+WriteLine($"SetValueFromGetNullRef got {form.SetValueFromGetNullRef(x)}");

@@ -28,3 +28,48 @@ if (matches.Count > 0 )
     WriteLine(matches[0].Groups[1]);
 else 
     WriteLine("No");
+
+#!csharp
+
+using static System.Console;
+using System.Text.RegularExpressions;
+using System.Text.Json;
+
+var expression = "StringId(MyString)  StringId(MyStringZZZ)";
+
+Regex _regex = new ("StringId\\((\\w+)\\)");
+
+
+var matches =  _regex.Matches(expression);
+foreach (var m in matches.Select(o => o.Groups))
+{
+    WriteLine(m[1].Value);
+}
+
+#!csharp
+
+using static System.Console;
+
+interface IMyInterface
+{
+}
+
+class MyBaseClass
+{
+    public string BaseString { get; set; }
+}
+
+class MyClass : MyBaseClass, IMyInterface
+{
+    public MyClass ()
+    {
+        BaseString = "BaseString";
+    }
+    public string MyString { get; set; }
+}
+
+var l = new List<MyBaseClass>() { new MyClass(), new MyBaseClass() };
+
+foreach ( var i in l.Where( o => typeof(IMyInterface).IsAssignableFrom(o.GetType()))) {
+    WriteLine("Hey "+i.BaseString);
+}
