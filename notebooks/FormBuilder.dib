@@ -8,7 +8,7 @@ Run this to generate a csv of strings to add. Add them, then run the next step
 
 $ErrorActionPreference = "stop"
 
-$form = gc -raw ~/code/ConditionalForms/src/test/test-input/hra-heart-health.json | convertfrom-json -depth 10
+$form = gc -raw ~/code/ConditionalForms/src/test/hras/hra-heart-health.json | convertfrom-json -depth 10
 
 $strings = @{}
 $guid = [Guid]::Empty
@@ -38,6 +38,15 @@ foreach ( $s in $form.steps )
     foreach ( $v in $s.values)
     {
         setString $v.displayName $v.name
+        if (Get-Member -InputObject $v -Name "description") {
+            $v.description = setString $v.description $v.name
+        }
+        if (Get-Member -InputObject $v -Name "placeholder") {
+            $v.placeholder = setString $v.placeholder $v.name
+        }
+        if (Get-Member -InputObject $v -Name "subtitle") {
+            $v.subtitle = setString $v.subtitle $v.name
+        }
         switch ($v.type) {
             "singleSelect" {
                 foreach ( $o in $v.options)
@@ -91,7 +100,7 @@ $script:set = 0
 $script:notSet = 0
 
 
-$form = gc -raw ~/temp/hra-heart-health.json | convertfrom-json -depth 10
+$form = gc -raw ~/code/ConditionalForms/src/test/hras/hra-heart-health.json | convertfrom-json -depth 10
 
 function setString($theValue) {
     $ret = $theValue
@@ -116,8 +125,8 @@ function setString($theValue) {
     return $ret
 }
 
-Write-Host "Empty strings in db:"
-$strings | ? { $_.value -eq '' } | Out-Host
+Write-Host "Empty strings ids that are in db:"
+$strings | ? { $_.value.id -eq '' } | Out-Host
 
 foreach ( $s in $form.steps )
 {
@@ -133,6 +142,15 @@ foreach ( $s in $form.steps )
     {
         Write-Verbose "    $($v.name) $($v.type) value"
         $v.displayName = setString $v.displayName $v.name
+        if (Get-Member -InputObject $v -Name "description") {
+            $v.description = setString $v.description $v.name
+        }
+        if (Get-Member -InputObject $v -Name "placeholder") {
+            $v.placeholder = setString $v.placeholder $v.name
+        }
+        if (Get-Member -InputObject $v -Name "subtitle") {
+            $v.subtitle = setString $v.subtitle $v.name
+        }
         switch ($v.type) {
             "singleSelect" {
                 foreach ( $o in $v.options)
