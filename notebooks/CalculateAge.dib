@@ -1,0 +1,40 @@
+#!csharp
+
+using static System.Console;
+
+// https://stackoverflow.com/questions/9/how-do-i-calculate-someones-age-based-on-a-datetime-type-birthday
+
+int age(DateTime birthdate, DateTime? today = null) 
+{
+    if (today is null) {
+        today = DateTime.Today;
+    }
+    // Calculate the age.
+    var age = today.Value.Year - birthdate.Year;
+
+    // Go back to the year in which the person was born in case of a leap year
+    if (birthdate.Date > today.Value.AddYears(-age)) age--;
+    return age;
+}
+
+var date = DateTime.Parse("12-08-61");
+when = DateTime.Today;
+WriteLine( $"{date:d} on {when:d} {age(date, when)}");
+var when = DateTime.Parse("12-07-2022");
+WriteLine( $"{date:d} on {when:d} {age(date, when)}");
+when = DateTime.Parse("12-08-2022");
+WriteLine( $"{date:d} on {when:d} {age(date, when)}");
+
+date = DateTime.Parse("2-29-2020");
+
+WriteLine( $"{date:d} on {when:d} {age(date, when)}");
+when = DateTime.Parse("2-28-2022");
+WriteLine( $"{date:d} on {when:d} {age(date, when)}");
+when = DateTime.Parse("3-1-2022");
+WriteLine( $"{date:d} on {when:d} {age(date, when)}");
+when = DateTime.Parse("2-28-2024");
+WriteLine( $"{date:d} on {when:d} {age(date, when)}");
+when = DateTime.Parse("2-29-2024");
+WriteLine( $"{date:d} on {when:d} {age(date, when)}");
+when = DateTime.Parse("3-1-2024");
+WriteLine( $"{date:d} on {when:d} {age(date, when)}");

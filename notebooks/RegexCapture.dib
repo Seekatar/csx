@@ -52,6 +52,7 @@ using static System.Console;
 
 interface IMyInterface
 {
+    string BaseString { get; set; }
 }
 
 class MyBaseClass
@@ -70,6 +71,13 @@ class MyClass : MyBaseClass, IMyInterface
 
 var l = new List<MyBaseClass>() { new MyClass(), new MyBaseClass() };
 
+foreach ( var i in l.OfType<IMyInterface>()) {
+    WriteLine("OfType "+i.BaseString);
+}
+foreach ( var i in l.Where( o => o.GetType().IsAssignableTo(typeof(IMyInterface)))) {
+    WriteLine("AssignableTo "+i.BaseString);
+}
+
 foreach ( var i in l.Where( o => typeof(IMyInterface).IsAssignableFrom(o.GetType()))) {
-    WriteLine("Hey "+i.BaseString);
+    WriteLine("AssignableFrom "+i.BaseString);
 }
