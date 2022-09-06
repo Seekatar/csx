@@ -76,7 +76,11 @@ foreach ($kv in $strings.GetEnumerator() ) {
 
 #!pwsh
 
-$strings = Invoke-Sqlcmd -Database TransparentlyClient2 -Username sa -Password $env:local_sa_pw -ServerInstance localhost -Query "select Id, Value from  Language.Strings where languageCode = 'en'"
+$strings = Invoke-Sqlcmd -Database TransparentlyClient2 `
+                         -Username sa `
+                         -Password $env:local_sa_pw `
+                         -ServerInstance localhost `
+                         -Query "select Id, Value from  Language.Strings where languageCode = 'en'"
 
 $ErrorActionPreference = "stop"
 
