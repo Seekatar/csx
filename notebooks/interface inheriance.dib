@@ -1,0 +1,42 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":null,"items":[{"name":"csharp","languageName":"C#","aliases":["c#","cs"]},{"name":"fsharp","languageName":"F#","aliases":["f#","fs"]},{"name":"pwsh","languageName":"PowerShell","aliases":["powershell"]},{"name":"javascript","languageName":"JavaScript","aliases":["js"]},{"name":"html","languageName":"HTML"},{"name":"sql","languageName":"SQL"},{"name":"kql","languageName":"KQL"},{"name":"mermaid","languageName":"Mermaid"},{"name":"httpRequest","languageName":"http"},{"name":"value"}]}}
+
+#!csharp
+
+using static System.Console;
+
+interface IFeatureToggle
+{
+    bool IsEnabled { get; }
+    string GetFor(string key);
+    string GetAll();
+}
+interface IFeatureToggleSnapshot : IFeatureToggle
+{
+
+}
+
+class FeatureToggleSnapshot : IFeatureToggleSnapshot
+{
+    public bool IsEnabled { get; set; }
+    public virtual string GetFor(string key) {
+        return key + nameof(FeatureToggleSnapshot);
+    }
+    public string GetAll() {
+        return GetFor("all");
+    }
+}
+
+class FeatureToggle : FeatureToggleSnapshot
+{
+    public override string GetFor(string key) {
+        return key + nameof(FeatureToggle);
+    }
+}
+
+var ft = new FeatureToggle();
+var fts = new FeatureToggleSnapshot();
+
+WriteLine($"Ft {ft.GetFor("ft")}");
+WriteLine($"Fts {fts.GetFor("ft")}");
