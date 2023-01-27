@@ -17,15 +17,15 @@ int age(DateTime birthdate, DateTime? today = null)
     return age;
 }
 
-var date = DateTime.Parse("12-08-61");
+var date = DateTime.Parse("12-02-80");
 when = DateTime.Today;
 WriteLine( $"{date:d} on {when:d} {age(date, when)}");
-var when = DateTime.Parse("12-07-2022");
+var when = DateTime.Parse("12-01-2022");
 WriteLine( $"{date:d} on {when:d} {age(date, when)}");
-when = DateTime.Parse("12-08-2022");
+when = DateTime.Parse("12-02-2022");
 WriteLine( $"{date:d} on {when:d} {age(date, when)}");
 
-date = DateTime.Parse("2-29-2020");
+date = DateTime.Parse("2-29-1988");
 
 WriteLine( $"{date:d} on {when:d} {age(date, when)}");
 when = DateTime.Parse("2-28-2022");
@@ -38,3 +38,63 @@ when = DateTime.Parse("2-29-2024");
 WriteLine( $"{date:d} on {when:d} {age(date, when)}");
 when = DateTime.Parse("3-1-2024");
 WriteLine( $"{date:d} on {when:d} {age(date, when)}");
+
+#!csharp
+
+#nullable enable
+using static System.Console;
+WriteLine($"Hi");
+
+TValue OldIfNull<TValue>(TValue? value, TValue defaultValue) => value ?? defaultValue;
+
+TValue IfNull<TValue>(TValue? value, TValue defaultValue)  {
+    return value == null ? defaultValue : (TValue)value;   
+}
+TValue NewIfNull<TValue>(Nullable<TValue> value, TValue defaultValue) where TValue : struct {
+    return value == null ? defaultValue : value.Value;   
+}
+TValue IfNull2<TValue>(TValue? value, TValue defaultValue) => value ?? defaultValue;
+// {
+//     return value ?? defaultValue;   
+// }    // end helper methods
+
+
+int age(DateTime birthdate, DateTime? today = null) 
+{
+    WriteLine("age");
+    return 1;
+}
+
+WriteLine($"Hi");
+
+int? i = null;
+DateTime? d = null;
+
+WriteLine($"1 {IfNull(i, 0)}");
+WriteLine($"2 {IfNull(d, DateTime.Now)}");
+WriteLine($"1 {OldIfNull(i, 0)}");
+WriteLine($"2 {OldIfNull(d, DateTime.Now)}");
+WriteLine($"1 {NewIfNull(i, 0)}");
+WriteLine($"2 {NewIfNull(d, DateTime.Now)}");
+WriteLine($"1 {IfNull2(i, 0)}");
+WriteLine($"2 {IfNull2(d, DateTime.Now)}");
+
+d = DateTime.Parse("12-02-80");
+i = 100;
+
+WriteLine($"1 {IfNull(i, 0)}");
+WriteLine($"2 {IfNull(d, DateTime.Now)}");
+WriteLine($"1 {OldIfNull(i, 0)}");
+WriteLine($"2 {OldIfNull(d, DateTime.Now)}");
+WriteLine($"1 {NewIfNull(i, 0)}");
+WriteLine($"2 {NewIfNull(d, DateTime.Now)}");
+WriteLine($"1 {IfNull2(i, 0)}");
+WriteLine($"2 {IfNull2(d, DateTime.Now)}");
+
+var x = IfNull(d,DateTime.Now);
+
+WriteLine($"3 {x.GetType()}");
+// WriteLine($"4 {age(IfNull(x,DateTime.Today))}");
+//WriteLine($"4 {age(OldIfNull(d,DateTime.Today))}");
+WriteLine($"4 {age(NewIfNull(d,DateTime.Today))}");
+WriteLine($"4 {age(IfNull2(d,DateTime.Today))}");
