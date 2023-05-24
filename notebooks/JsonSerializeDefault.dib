@@ -1,0 +1,20 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"languageName":"csharp","name":"csharp"}]}}
+
+#!csharp
+
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using static System.Console;
+
+class Test {
+ public string Name { get; set; }
+ public bool IsEnabled { get; set; }
+ public int Count { get; set; } = 123;
+ public int Count2 { get; set; }
+}
+
+var value = new Test();
+
+JsonSerializer.Serialize(value, new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault})
