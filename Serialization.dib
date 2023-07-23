@@ -1,0 +1,26 @@
+#!csharp
+
+using static System.Console;
+using System.Text.Json.Serialization;
+
+record LinkedDocument ( [property: JsonPropertyName("fileName")]
+                        string Name, 
+                        [property: JsonPropertyName("fileType")]
+                        string Type);
+
+// if you add string name, it will have name, and Name props
+record LinkedDocumentContent(string Name, string Type, string Content ) : LinkedDocument(Name, Type)
+{
+    [JsonPropertyName("extra")]
+    public string Extra { get; init;}
+    public LinkedDocumentContent(LinkedDocument ld, string content) : this (ld.Name, ld.Type, content) {}
+}
+
+LinkedDocument ld = new ("testName", "testType");
+LinkedDocumentContent ldc = new (ld, "content") { Extra = "more stuff"};
+
+WriteLine($"String {ld}");
+WriteLine($"Json {System.Text.Json.JsonSerializer.Serialize(ld)}");
+WriteLine($"String {ldc}");
+WriteLine($"Json {System.Text.Json.JsonSerializer.Serialize(ldc)}");
+WriteLine(object.ReferenceEquals(ld.Name, ldc.Name));
