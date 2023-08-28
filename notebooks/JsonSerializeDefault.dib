@@ -18,3 +18,169 @@ class Test {
 var value = new Test();
 
 JsonSerializer.Serialize(value, new JsonSerializerOptions() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault})
+
+#!csharp
+
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using static System.Console;
+
+class AppRole {}
+class DirectoryGroup {}
+
+    interface IUser
+    {
+        string FirstName { get; set; }
+        string ClientId { get; set; }
+        string LastName { get; set; }
+        string PhoneNumber { get; set; }
+        string PhotoUri { get; set; }
+        List<AppRole> Roles { get; set; }
+        List<DirectoryGroup> DirectoryGroups { get; set; }
+        string Title { get; set; }
+        string UserName { get; set; }
+        int UserId { get; set; }
+        List<Market> Markets { get; set; }
+        bool SsoEnabled { get; set; }
+        
+        
+    }
+class Market 
+    {
+        public long Id { get; set; }
+        public string Description { get; set; } = "";
+        public long EntityId { get; set; }
+        public string DisplayName { get; set; } = "";
+        public string EntityType { get; } = "market";
+        public List<IUser>? Users { get; set; }
+        public bool IsClone => ParentMarketId is not null;
+
+        public string CreatedBy { get; set; } = "";
+        public DateTime CreatedOn { get; set; }
+        [Newtonsoft.Json.JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
+        public long? ParentMarketId { get; set; }
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public string AuditEntityId => EntityId.ToString();
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public string AuditEntityType => this.GetType().FullName ?? "";
+
+    }
+var jsonString = """
+{
+  "id": 71,
+  "description": "South-East",
+  "entityId": 71,
+  "displayName": "UpdatedMarket-96607af4-caa2-47de-94b5-ffb574702041",
+  "entityType": "market",
+  "users": [
+    {
+      "firstName": "",
+      "clientId": "",
+      "lastName": "",
+      "phoneNumber": "",
+      "photoUri": "",
+      "roles": [],
+      "directoryGroups": [],
+      "title": "",
+      "userName": "britton+scranton@transparently.com",
+      "userId": 8,
+      "markets": [],
+      "ssoEnabled": false
+    }
+  ],
+  "isClone": false,
+  "createdBy": "britton+scranton@transparently.com",
+  "createdOn": "2023-08-18T17:10:52.161285Z"
+}
+""";
+    JsonSerializer.Deserialize(jsonString, typeof(Market), new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true
+    });
+
+#!csharp
+
+#r "nuget:Newtonsoft.Json,12.0.3"
+#r "nuget:Newtonsoft.Json.Schema,3.0.13"
+
+using static System.Console;
+
+class AppRole {}
+class DirectoryGroup {}
+
+    interface IUser
+    {
+        string FirstName { get; set; }
+        string ClientId { get; set; }
+        string LastName { get; set; }
+        string PhoneNumber { get; set; }
+        string PhotoUri { get; set; }
+        List<AppRole> Roles { get; set; }
+        List<DirectoryGroup> DirectoryGroups { get; set; }
+        string Title { get; set; }
+        string UserName { get; set; }
+        int UserId { get; set; }
+        List<Market> Markets { get; set; }
+        bool SsoEnabled { get; set; }
+        
+        
+    }
+class Market 
+    {
+        public long Id { get; set; }
+        public string Description { get; set; } = "";
+        public long EntityId { get; set; }
+        public string DisplayName { get; set; } = "";
+        public string EntityType { get; } = "market";
+        public List<IUser>? Users { get; set; }
+        public bool IsClone => ParentMarketId is not null;
+
+        public string CreatedBy { get; set; } = "";
+        public DateTime CreatedOn { get; set; }
+        [Newtonsoft.Json.JsonIgnore]
+        [System.Text.Json.Serialization.JsonIgnore]
+        public long? ParentMarketId { get; set; }
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public string AuditEntityId => EntityId.ToString();
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public string AuditEntityType => this.GetType().FullName ?? "";
+
+    }
+var jsonString = """
+{
+  "id": 71,
+  "description": "South-East",
+  "entityId": 71,
+  "displayName": "UpdatedMarket-96607af4-caa2-47de-94b5-ffb574702041",
+  "entityType": "market",
+  "users": [
+    {
+      "firstName": "",
+      "clientId": "",
+      "lastName": "",
+      "phoneNumber": "",
+      "photoUri": "",
+      "roles": [],
+      "directoryGroups": [],
+      "title": "",
+      "userName": "britton+scranton@transparently.com",
+      "userId": 8,
+      "markets": [],
+      "ssoEnabled": false
+    }
+  ],
+  "isClone": false,
+  "createdBy": "britton+scranton@transparently.com",
+  "createdOn": "2023-08-18T17:10:52.161285Z"
+}
+""";
+    Newtonsoft.Json.JsonConvert.DeserializeObject<Market>(jsonString);
