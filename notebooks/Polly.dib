@@ -1,0 +1,62 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"languageName":"csharp","name":"csharp"}]}}
+
+#!csharp
+
+#r "nuget:Polly,7.2.2"
+#nullable enable
+
+using static System.Console;
+using Polly;
+
+int retries = 20;
+
+int retryDelaySeconds = 1;
+
+class A {
+    public string? DestinationDatabase { get; set; }
+    public static int i;
+    public Task<string?> Get() {
+        WriteLine($"Get {i}");
+        i++;
+        if (i < 4) {
+            return Task.FromResult<string?>(null);
+        }
+        return Task.FromResult<string?>("db");
+    }
+}
+var a = new A();
+
+var db = await Policy
+    .HandleResult<string?>( result => result is null)
+    .WaitAndRetryAsync(retries, retryAttempt => TimeSpan.FromSeconds(retryDelaySeconds))
+    .ExecuteAsync(async () => (await a.Get())
+    ).ConfigureAwait(false);
+
+WriteLine($"Got '{db}' try 1");
+
+db = await Policy
+    .HandleResult<string?>( result => result is null)
+    .WaitAndRetryAsync(retries, retryAttempt => TimeSpan.FromSeconds(retryDelaySeconds))
+    .ExecuteAsync(async () => (await a.Get())
+    ).ConfigureAwait(false);
+
+WriteLine($"Got '{db}' try 2");
+
+int j = 0;
+db = await Policy
+    .Handle<Exception>()
+    .WaitAndRetryAsync(retries, retryAttempt => TimeSpan.FromSeconds(retryDelaySeconds), onRetry: (exception, span) =>
+    {
+        WriteLine($"Retry {exception.Message}");
+    })
+    .ExecuteAsync(async () =>
+    {
+        await Task.CompletedTask;
+        throw new Exception("test"+j++);
+        return "";
+    }
+    ).ConfigureAwait(false);
+
+WriteLine($"Got '{db}' try 3 with throw");

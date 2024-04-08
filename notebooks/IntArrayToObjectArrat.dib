@@ -1,0 +1,45 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"languageName":"csharp","name":"csharp"}]}}
+
+#!csharp
+
+var x = new Int64 [] { 1, 2, 3, 5, };
+object y = x;
+
+var o = ((Array)y) as object[];
+if (o != null)
+    Console.WriteLine(o.Length); // 4
+else
+    Console.WriteLine("not an array");
+
+if (y != null)
+    Console.WriteLine("not null"); // 4
+else
+    Console.WriteLine("null");
+
+#!csharp
+
+var x = new Int64[] { 1, 2, 3, 5 };
+object y = x;
+
+var elementType = y.GetType().GetElementType();
+if (elementType.IsValueType || elementType == typeof(object))
+{
+    var yArray = (Array)y;
+    var o = new object[yArray.Length];
+    Array.Copy(yArray, o, yArray.Length);
+    if (o != null)
+        Console.WriteLine(o.Length); // 4
+    else
+        Console.WriteLine("not an array");
+}
+else
+{
+    Console.WriteLine("not an array");
+}
+
+if (y != null)
+    Console.WriteLine("not null"); // not null
+else
+    Console.WriteLine("null");
