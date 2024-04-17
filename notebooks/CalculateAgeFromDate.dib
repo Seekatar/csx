@@ -4,6 +4,7 @@
 
 #!csharp
 
+// calculate age from date of birth
 using static System.Console;
 
 
@@ -32,3 +33,18 @@ dob = DateOnly.Parse("2003-06-25");
 WriteLine($"{dob}, {calcDob(dob)}");
 dob = DateOnly.Parse("1998-08-04");
 WriteLine($"{dob}, {calcDob(dob)}");
+
+#!csharp
+
+// calculate date for people over an age
+using static System.Console;
+
+Func<int, DateOnly> calcDate = (int age) => {
+var today = DateOnly.FromDateTime(DateTime.Now);
+return today.AddYears(-age);
+};
+
+WriteLine($"{calcDate(60)}");
+WriteLine($"{calcDate(61)}");
+WriteLine($"{calcDate(62)}");
+WriteLine($"{calcDate(63)}");
