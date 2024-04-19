@@ -1,3 +1,7 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
 #!csharp
 
 var x = "this is a test set in C#";
@@ -6,6 +10,7 @@ Console.WriteLine($"x is csharp is {x}");
 #!pwsh
 
 Write-Host "x is powerShell is $x"
+$y = "this is a test set in PowerShell"
 
 #!javascript
 
@@ -20,8 +25,10 @@ Console.WriteLine($"x is csharp is {x}");
 #!pwsh
 
 #!share --from csharp x
+#!share --from powershell y
 
 Write-Host "x in PowerShell $x"
+Write-Host "y in PowerShell $y"
 
 #!javascript
 
