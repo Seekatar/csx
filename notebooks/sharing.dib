@@ -9,12 +9,10 @@ Console.WriteLine($"x is csharp is {x}");
 
 #!pwsh
 
+#!share --from csharp x
+
 Write-Host "x is powerShell is $x"
 $y = "this is a test set in PowerShell"
-
-#!javascript
-
-console.log(`x in javascript is ${x}`)
 
 #!csharp
 
@@ -22,35 +20,17 @@ console.log(`x in javascript is ${x}`)
 
 Console.WriteLine($"x is csharp is {x}");
 
-#!pwsh
+#!fsharp
 
 #!share --from csharp x
 #!share --from powershell y
 
 Write-Host "x in PowerShell $x"
 Write-Host "y in PowerShell $y"
+printfn "%s" x
 
 #!javascript
 
 #!share --from csharp x
 
 console.log(`x in javascript is ${x}`)
-
-#!csharp
-
-#!share --from csharp x
-
-#!html
-
-<h1>Test</h1>
-<div id="test"></div>
-
-#!javascript
-
-let value = await interactive.csharp.getVariable('x')
-document.getElementById("test").innerHtml = value
-
-#!javascript
-
-let value = await interactive.csharp.getVariable('x')
-document.getElementById("test").innerHtml = value

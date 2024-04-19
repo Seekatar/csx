@@ -1,3 +1,7 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
 #!csharp
 
 using System.Text.Json;
@@ -32,3 +36,37 @@ WriteLine($"{Newtonsoft.Json.JsonConvert.SerializeObject(a)}");
 
 a = Newtonsoft.Json.JsonConvert.DeserializeObject<A>("{\"E1\":\"a\",\"DefaultText\":\"Next\"}");
 WriteLine($"{Newtonsoft.Json.JsonConvert.SerializeObject(a)}");
+
+#!csharp
+
+using System.Text.Json;
+using static System.Console;
+using System.Text.Json.Serialization;
+
+class A
+{
+    public enum E {
+        a,b,c
+    }
+    public TimeSpan TS { get; set; } = TimeSpan.FromMinutes(5);
+    public E E1 = E.b;
+    public string DefaultText {get;set;} = "This is default value";
+}
+// newtownsoft tolerates newlines in strings
+var s = """
+                {
+                    "E1":"a",
+                    "DefaultText":"Ne
+                    xt"
+                }
+        """;
+WriteLine(s);
+// similar
+// s = "{\"E1\":\"a\",\"DefaultText\":\"Ne\r\nxt\"}";
+var a = Newtonsoft.Json.JsonConvert.DeserializeObject<A>(s);
+WriteLine($"DefaultText: {a.DefaultText}");
+// can't use either \r or \n in the string
+WriteLine(s);
+a = System.Text.Json.JsonSerializer.Deserialize<A>(s);
+WriteLine(s);
+WriteLine($"DefaultText: {a.DefaultText}");

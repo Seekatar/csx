@@ -1,12 +1,14 @@
 #!markdown
 
-### Get Strings from JSON
+### Get Strings from JSON into CSV
+
+Run this to generate a csv of strings to add. Add them, then run the next step
 
 #!pwsh
 
-$ErrorActitionPreference = "stop"
+$ErrorActionPreference = "stop"
 
-$form = gc -raw /Users/jwallace/code/ConditionalForms/src/test/test-input/hra-heart-health.json | convertfrom-json -depth 10
+$form = gc -raw ~/code/ConditionalForms/src/test/hras/hra-heart-health.json | convertfrom-json -depth 10
 
 $strings = @{}
 $guid = [Guid]::Empty
@@ -16,7 +18,7 @@ function setString($theValue,$name) {
         $name = $theValue
     }
     if (!$theValue) {
-        $strings["<empty>"] = "empty";    
+        $strings["<empty>"] = "empty";
     } else {
         if ( ![Guid]::TryParse($theValue, [ref] $guid ) ) {
             $strings[$theValue] = $name;
@@ -33,18 +35,27 @@ foreach ( $s in $form.steps )
     if (Get-Member -Input $s -Name "backText") {
         setString $s.backText
     }
-    foreach ( $v in $s.values) 
+    foreach ( $v in $s.values)
     {
         setString $v.displayName $v.name
+        if (Get-Member -InputObject $v -Name "description") {
+            $v.description = setString $v.description $v.name
+        }
+        if (Get-Member -InputObject $v -Name "placeholder") {
+            $v.placeholder = setString $v.placeholder $v.name
+        }
+        if (Get-Member -InputObject $v -Name "subtitle") {
+            $v.subtitle = setString $v.subtitle $v.name
+        }
         switch ($v.type) {
             "singleSelect" {
-                foreach ( $o in $v.options) 
+                foreach ( $o in $v.options)
                 {
                     setString $o.label
                 }
             }
             "multiSelect" {
-                foreach ( $o in $v.options) 
+                foreach ( $o in $v.options)
                 {
                     setString $o.label
                 }
@@ -54,9 +65,9 @@ foreach ( $s in $form.steps )
                 setString $o.falseLabel
             }
             "singleConditionalSelect" {
-                foreach ( $co in $v.conditionalOptions) 
+                foreach ( $co in $v.conditionalOptions)
                 {
-                    foreach ( $o in $co.options) 
+                    foreach ( $o in $co.options)
                     {
                         setString $o.label
                     }
@@ -65,7 +76,7 @@ foreach ( $s in $form.steps )
         }
     }
 }
-"name,value" | Out-File ~/temp/strings.csv -Encoding utf8 
+"name,value" | Out-File ~/temp/strings.csv -Encoding utf8
 foreach ($kv in $strings.GetEnumerator() ) {
     "$($kv.value),`"$($kv.name)`""  | Out-File ~/temp/strings.csv -Encoding utf8 -append
 }
@@ -74,64 +85,82 @@ foreach ($kv in $strings.GetEnumerator() ) {
 
 ### Set Strings from Db
 
+Run this to set any strings to existing values in the database
+
 #!pwsh
 
-$strings = Invoke-Sqlcmd -Database TransparentlyClient2 `
-                         -Username sa `
-                         -Password $env:local_sa_pw `
-                         -ServerInstance localhost `
-                         -Query "select Id, Value from  Language.Strings where languageCode = 'en'"
-
+# $VerbosePreference = "Continue"
+$VerbosePreference = "SilentlyContinue"
 $ErrorActionPreference = "stop"
 
-$form = gc -raw ~/temp/hra-heart-health.json | convertfrom-json -depth 10
+$strings = Invoke-Sqlcmd -Database TransparentlyClient2 -Username sa -Password $env:local_sa_pw -ServerInstance localhost -Query "select Id, Value from Language.Strings where languageCode = 'en'"
+
+$script:alreadySet = 0
+$script:set = 0
+$script:notSet = 0
+
+
+$form = gc -raw ~/code/ConditionalForms/src/test/hras/hra-heart-health.json | convertfrom-json -depth 10
 
 function setString($theValue) {
     $ret = $theValue
+    $guid = [Guid]::Empty
     if ( ![Guid]::TryParse($theValue, [ref] $guid ) ) {
         $v = $strings | Where-Object { $_.value -eq $theValue }
         if ($v -eq $null) {
-            Write-Warning "Didn't find '$theValue'"
-            $ret = "5ba36eaf-cf3a-4485-a716-3ba235d00053" # empty??
+            Write-Warning "    Didn't find '$theValue' leaving it as-is"
+            $script:notSet += 1
         } else {
             if ($v -is 'array') {
-                Write-Warning "Multiple matches for $theValue"
+                Write-Warning "    Multiple matches for '$theValue' taking the first one"
                 $v = $v[0]
             }
             $ret = $v.id
+            Write-Verbose "    Set $theValue to $ret"
+            $script:set += 1
         }
-    }   
+    } else {
+        $script:alreadySet += 1
+    }
     return $ret
 }
 
-$strings | ? { $_.value -eq '' } | Out-Host
+Write-Host "Empty strings ids that are in db:"
+$strings | ? { $_.value.id -eq '' } | Out-Host
 
 foreach ( $s in $form.steps )
 {
-    # Write-Host "$($s.name)"
+    Write-Verbose "$($s.name)"
     $s.nameId = setString $s.nameId
-    if (Get-Member -Input $s -Name "nextText") {
+    if ((Get-Member -Input $s -Name "nextText") -and $s.nextText -ne $null) {
         $s.nextText = setString $s.nextText
     }
-    if (Get-Member -Input $s -Name "backText") {
+    if ((Get-Member -Input $s -Name "backText") -and $s.nextText -ne $null) {
         $s.backText = setString $s.backText
     }
-    foreach ( $v in $s.values) 
+    foreach ( $v in $s.values)
     {
-        # Write-Host "    $($v.name) $($v.type) value"
+        Write-Verbose "    $($v.name) $($v.type) value"
         $v.displayName = setString $v.displayName $v.name
+        if (Get-Member -InputObject $v -Name "description") {
+            $v.description = setString $v.description $v.name
+        }
+        if (Get-Member -InputObject $v -Name "placeholder") {
+            $v.placeholder = setString $v.placeholder $v.name
+        }
+        if (Get-Member -InputObject $v -Name "subtitle") {
+            $v.subtitle = setString $v.subtitle $v.name
+        }
         switch ($v.type) {
             "singleSelect" {
-                foreach ( $o in $v.options) 
+                foreach ( $o in $v.options)
                 {
-                    # Write-Host ">>>>$($o.label)"
                     $o.label = setString $o.label
                 }
             }
             "multiSelect" {
-                foreach ( $o in $v.options) 
+                foreach ( $o in $v.options)
                 {
-                    # Write-Host ">>>>$($o.label)"
                     $o.label = setString $o.label
                 }
             }
@@ -140,9 +169,9 @@ foreach ( $s in $form.steps )
                 $v.falseLabel = setString $v.falseLabel
             }
             "singleConditionalSelect" {
-                foreach ( $co in $v.conditionalOptions) 
+                foreach ( $co in $v.conditionalOptions)
                 {
-                    foreach ( $o in $co.options) 
+                    foreach ( $o in $co.options)
                     {
                         $o.label = setString $o.label
                     }
@@ -153,3 +182,11 @@ foreach ( $s in $form.steps )
 }
 
 $form | ConvertTo-Json -Depth 10 | Out-File ~/temp/form.json
+Write-Host "Output in ~/temp/form.json"
+Write-Host "$script:alreadySet string already have Guids"
+Write-Host "Set $script:set strings to Guids"
+if ($notSet) {
+    Write-Host "Did not set $script:notSet strings. You need to add them before saving the form."
+} else {
+    Write-Host "All strings are set."
+}

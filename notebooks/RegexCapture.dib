@@ -1,3 +1,7 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":null,"items":[{"name":"csharp","languageName":"C#","aliases":["c#","cs"]},{"name":"fsharp","languageName":"F#","aliases":["f#","fs"]},{"name":"pwsh","languageName":"PowerShell","aliases":["powershell"]},{"name":"javascript","languageName":"JavaScript","aliases":["js"]},{"name":"html","languageName":"HTML"},{"name":"sql","languageName":"SQL"},{"name":"kql","languageName":"KQL"},{"name":"mermaid","languageName":"Mermaid"},{"name":"httpRequest","languageName":"http"},{"name":"value"}]}}
+
 #!csharp
 
 using static System.Console;
@@ -28,3 +32,76 @@ if (matches.Count > 0 )
     WriteLine(matches[0].Groups[1]);
 else 
     WriteLine("No");
+
+#!csharp
+
+using static System.Console;
+using System.Text.RegularExpressions;
+using System.Text.Json;
+
+var expression = "StringId(MyString)  StringId(MyStringZZZ)";
+
+Regex _regex = new ("StringId\\((\\w+)\\)");
+
+
+var matches =  _regex.Matches(expression);
+foreach (var m in matches.Select(o => o.Groups))
+{
+    WriteLine(m[1].Value);
+}
+
+#!csharp
+
+using static System.Console;
+using System.Text.RegularExpressions;
+using System.Text.Json;
+
+var host = "featuresapi-test-sc.loyalhealth.internal";
+
+Regex hostRegex = new(@"-(?<environment>\w+)-\w+\.loyalhealth\.internal$", RegexOptions.Compiled);
+var matches =  hostRegex.Matches(host);
+if (matches.Count > 0)
+{
+    var environment = matches[0].Groups["environment"].Value;
+    WriteLine(environment);
+}
+foreach (var m in matches.Select(o => o.Groups))
+{
+    WriteLine(m[1].Value);
+}
+
+#!csharp
+
+using static System.Console;
+
+interface IMyInterface
+{
+    string BaseString { get; set; }
+}
+
+class MyBaseClass
+{
+    public string BaseString { get; set; }
+}
+
+class MyClass : MyBaseClass, IMyInterface
+{
+    public MyClass ()
+    {
+        BaseString = "BaseString";
+    }
+    public string MyString { get; set; }
+}
+
+var l = new List<MyBaseClass>() { new MyClass(), new MyBaseClass() };
+
+foreach ( var i in l.OfType<IMyInterface>()) {
+    WriteLine("OfType "+i.BaseString);
+}
+foreach ( var i in l.Where( o => o.GetType().IsAssignableTo(typeof(IMyInterface)))) {
+    WriteLine("AssignableTo "+i.BaseString);
+}
+
+foreach ( var i in l.Where( o => typeof(IMyInterface).IsAssignableFrom(o.GetType()))) {
+    WriteLine("AssignableFrom "+i.BaseString);
+}
