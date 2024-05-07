@@ -1,0 +1,102 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"languageName":"csharp","name":"csharp"}]}}
+
+#!csharp
+
+using static System.Console;
+using System.Globalization;
+
+private class OrdinalStringComparer : IComparer<string>
+{
+    public int Compare(string? x, string? y)
+    {
+        return String.CompareOrdinal(x, y);
+    }
+}
+
+private class StringComparer : IComparer<string>
+{
+    public int Compare(string? x, string? y)
+    {
+        return String.Compare(x, y);
+    }
+}
+
+// this matches for workers by using ignore symbols, not *deleted and 501r
+private class InvariantCulture : IComparer<string>
+{
+    private CompareOptions _options;
+    public InvariantCulture(CompareOptions options = CompareOptions.IgnoreSymbols) {
+        _options = options;
+    }
+    public int Compare(string? x, string? y)
+    {
+        return String.Compare(x, y, CultureInfo.InvariantCulture, _options);
+    }
+}
+
+// this matches for workers by using ignore symbols, not *deleted and 501r
+private class Culture1033 : IComparer<string>
+{
+    private CultureInfo culture;
+    private CompareOptions _options;
+    public Culture1033(CompareOptions options = CompareOptions.IgnoreSymbols) {
+        culture = CultureInfo.GetCultureInfo(1033);
+        _options = options;
+    }
+    public int Compare(string? x, string? y)
+    {
+        return String.Compare(x, y, culture, _options);
+    }
+}
+
+// from SQL server with collation of SQL_Latin1_General_CP1_CI_AS LCID 1033
+List<string> lowerList = ["*deleted 1","501r 2","neurology 3", "neuro-ophthalmology 4",
+                            "self pay/copay/ded/pending medicaid and vovc 5", "self-pay 6",
+                            "workers comp 7", "worker's comp 8"];
+WriteLine("\nFrom SQL. Expected:");
+foreach (var item in lowerList)
+{
+    WriteLine($"{item}");
+}
+
+var sortedList = lowerList.OrderBy(x => x, new OrdinalStringComparer() ).ToList();
+WriteLine("\nSorted list by CompareOrdinal:");
+foreach (var item in sortedList)
+{
+    WriteLine($"{item}");
+}
+
+sortedList = lowerList.OrderBy(x => x, new StringComparer() ).ToList();
+WriteLine("\nSorted list by String.Compare (current culture):");
+foreach (var item in sortedList)
+{
+    WriteLine($"{item}");
+}
+
+sortedList = lowerList.OrderBy(x => x, new InvariantCulture() ).ToList();
+WriteLine("\nSorted list by InvariantCulture, IgnoreSymbols:");
+foreach (var item in sortedList)
+{
+    WriteLine($"{item}");
+}
+sortedList = lowerList.OrderBy(x => x, new InvariantCulture(CompareOptions.None)).ToList();
+WriteLine("\nSorted list by InvariantCulture:");
+foreach (var item in sortedList)
+{
+    WriteLine($"{item}");
+}
+sortedList = lowerList.Select(o => o.Replace("*","0")).OrderBy(x => x, new Culture1033() ).ToList();
+WriteLine("\nSorted list by Culture1033, IgnoreSymbols:");
+foreach (var item in sortedList)
+{
+    WriteLine($"{item}");
+}
+var doit = false;
+if (doit){
+    foreach( var c in CultureInfo.GetCultures(CultureTypes.AllCultures))
+    {
+        WriteLine($"{c.Name} {c.DisplayName}");
+    }
+}
