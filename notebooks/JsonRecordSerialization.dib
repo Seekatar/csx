@@ -1,0 +1,54 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"languageName":"csharp","name":"csharp"}]}}
+
+#!csharp
+
+using System.Runtime.Serialization;
+using System.Text.Json;
+using static System.Console;
+using System.Text.Json.Serialization;
+
+// don't neeed to use JsonPropertyName, if use the PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+// which you can set in the ASP.NET with  .AddJsonOptions(options =>
+// {
+//     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+//     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+// });
+record ACListNew(
+    [property: JsonPropertyName("name")] string name,
+    [property: JsonPropertyName("stringid")] string stringid,
+    [property: JsonPropertyName("sender_url")] string sender_url,
+    [property: JsonPropertyName("sender_reminder")] string sender_reminder,
+    [property: JsonPropertyName("send_last_broadcast")] bool send_last_broadcast = false,
+    [property: JsonPropertyName("carboncopy")] string? carboncopy = null,
+    [property: JsonPropertyName("subscription_notify")] string? subscription_notify = null,
+    [property: JsonPropertyName("unsubscription_notify")] string? unsubscription_notify = null,
+    [property: JsonPropertyName("user")] int? user = null
+    ){
+        public string extra = "extra"; // since not a property, it will not be serialized
+    }
+record ACListNew2(
+    string name,
+    string stringid,
+    string sender_url,
+    string sender_reminder,
+    bool send_last_broadcast = false,
+    string? carboncopy = null,
+    string? subscription_notify = null,
+    string? unsubscription_notify = null,
+    int? user = null
+    ){
+        public string extra {get;set;}= "extra";
+    }
+
+var obj = new ACListNew("name", "stringid", "sender_url", "sender_reminder", true, "carboncopy", "subscription_notify", "unsubscription_notify", 1);
+var json = JsonSerializer.Serialize(obj, new JsonSerializerOptions { WriteIndented = true,
+ PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+WriteLine(json);
+
+var obj2 = new ACListNew2("name", "stringid", "sender_url", "sender_reminder", true, "carboncopy", "subscription_notify", "unsubscription_notify", 1);
+var json2 = JsonSerializer.Serialize(obj2, new JsonSerializerOptions { WriteIndented = true
+//,PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+});
+WriteLine(json2);
