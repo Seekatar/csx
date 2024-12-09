@@ -1,0 +1,23 @@
+#!markdown
+
+# This is a notebook for C# Regex
+
+#!csharp
+
+using System.Text.RegularExpressions;
+using System.Linq;
+using static System.Console;
+
+Regex parseTargetRef = new(@"\.pages\[(\d+)\]\.lines.*metadata\.id==.([\d\w-]+)");
+
+var BillId = "123-123";
+var TargetReference = $"$.bills[@._id=='{BillId}'].pages[0].lines[@.metadata.id=='4acead17-1455-4bde-8baa-75a7e3ce4daa']";
+TargetReference = "$.bills[@._id=='f9b90000-4acd-268b-a034-08d8c142fcac'].pages[0].lines[@.metadata.id=='4acead17-1455-4bde-8baa-75a7e3ce4daa'].daysOrUnits";
+
+var match = parseTargetRef.Match(TargetReference);
+
+WriteLine($"Success is {match.Success} with {match.Captures.Count} captures and {match.Groups.Count} groups:");
+foreach (var g in match.Groups)
+{
+    WriteLine($"    {g.GetType().Name}: {g.ToString()} ");
+}

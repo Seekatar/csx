@@ -1,0 +1,56 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!markdown
+
+# Use Automapper to Copy with Shallow Copy of Array
+
+#!csharp
+
+#r "nuget:AutoMapper"
+
+using System.Text.Json;
+using static System.Console;
+using System;
+using AutoMapper;
+
+class Recommendations
+{
+    public ICollection<string> LS {get; set;} = new List<string>();
+    public string S {get; set;} = "";
+    public int I {get; set;}
+}
+
+class SavedRecommendations : Recommendations
+{
+    public SavedRecommendations() {}
+    public SavedRecommendations(Recommendations r)
+    {
+        LS = r.LS;
+        S = r.S;
+        I = r.I;
+    }
+    public string Id { get; set; }
+}
+
+var r = new Recommendations() { S = "Base", I = 345, LS = new List<string> {"ab","cd"} };
+var sr = new SavedRecommendations() { Id = "123" };
+
+// shallow copy array
+var config = new MapperConfiguration(cfg => cfg.CreateMap<Recommendations, SavedRecommendations>()
+                .ForMember( dest => dest.LS, opt => opt.Ignore())
+                .AfterMap((src,dest) => dest.LS = src.LS));
+
+var mapper = new Mapper(config);
+sr = mapper.Map<SavedRecommendations>(r);
+sr.LS.Add("test");
+WriteLine($"Arrays are same reference {Object.ReferenceEquals(sr.LS, r.LS)}");
+WriteLine("--- sr");
+WriteLine(System.Text.Json.JsonSerializer.Serialize(sr, new JsonSerializerOptions() {WriteIndented = true}));
+WriteLine("--- r");
+WriteLine(System.Text.Json.JsonSerializer.Serialize(r, new JsonSerializerOptions() {WriteIndented = true}));
+
+#!csharp
+
+System.Text.Encoding.UTF8.GetString((byte[])(Array)(new sbyte[] { -30 }));

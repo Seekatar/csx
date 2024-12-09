@@ -1,0 +1,142 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!markdown
+
+# Bug 1
+
+* remove 'a' from the list
+* one bug, how to resolve it
+
+#!csharp
+
+using static System.Console;
+
+var list = new List<string>() {"a", "b", "c","a", "b", "c", "a", "b", "d"};
+
+foreach (var l in list)
+{
+    if ( l == "a")
+    {
+        list.Remove(l);
+    }
+}
+WriteLine(list);
+
+#!markdown
+
+# Bug 2
+
+* find "and" in the list
+* two bugs
+
+#!csharp
+
+using static System.Console;
+
+string findMe = "and";
+string s;
+var list = new string[] { "fish", "and", "chips" };
+
+for (int i = 0; i <= list.Length; i++)
+{
+    if ( s == list[i] )
+        WriteLine(list[i]);
+}
+
+#!markdown
+
+# Bug 3
+
+* multi-threaded count up to 200, but sometimes goes higher
+* threading bug in class A
+* .NET-specific bug in the code to run the threads
+
+#!csharp
+
+using static System.Console;
+
+// main bug in this class
+public class A
+{
+    public int x = 0;
+
+    public bool IncrementNumber()
+    {
+        if (x < 200)
+        {
+            // do some work
+            x += 1;
+            return true;
+        }
+        return false;
+    }
+}
+
+var a = new A();
+
+// .NET-specific bug in this code
+
+// run 3 threads to call A.IncrementNumber
+var task = new List<Task>();
+for (var i = 0; i < 3; i++)
+{
+    task.Add(Task.Run(() => {
+        while( a.IncrementNumber() )
+        {
+            // wait for true
+        }
+    }));
+}
+WriteLine($"Done! {a.x}");
+
+#!markdown
+
+# 4 Singleton
+
+* how to make this reliably work
+
+#!csharp
+
+class MySingleton
+{
+    // one bug
+    static MySingleton a;
+    private MySingleton() {}
+
+    public static MySingleton Instance()
+    {
+        if (a == null)
+            a = new MySingleton();
+        return a;
+    }
+}
+
+#!markdown
+
+# 5 Write strtoi
+
+* write function to convert string of numbers to an integer
+* may only use primitive statements
+* may not call any built-in methods or functions
+
+#!csharp
+
+using static System.Console;
+string s = "123";
+
+int convert(string s)
+{
+    int i = 0;
+    // without calling any functions, convert s to 123
+
+#region hint to convert char to number
+    char c = '4';
+    int j = c - '0';
+#endregion
+
+    return i;
+}
+
+WriteLine(convert(s)); // print 123

@@ -1,0 +1,207 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
+#!markdown
+
+# Factory Pattern to Get LinkedDocument Provider
+
+This avoids the Service Locator anti pattern to get a provider for a specific document
+
+* Uses immutable `records` for the objects.
+  * The longer syntax is used since attributes are added to each property
+  * Uses `with` to copy doc2 from doc1
+  * Should use Automapper to copy LinkedDocument -> LinkedDocumentContent
+* Injects `IEnumerable<IDocumentProvider>` into a factory class
+
+#!csharp
+
+#r "Microsoft.Extensions.DependencyInjection.dll"
+#r "Microsoft.Extensions.Configuration.dll"
+#r "Microsoft.Extensions.Configuration.Json.dll"
+#r "Microsoft.Extensions.Configuration.EnvironmentVariables.dll"
+#r "System.Runtime.dll"
+#r "Microsoft.Extensions.Logging.Abstractions.dll"
+#r "nuget:MongoDB.Bson"
+#nullable enable
+
+using static System.Console;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson;
+
+public record LinkedDocument
+{
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = "";
+    [BsonElement("creationTimestamp")]
+    [JsonPropertyName("creationTimestamp")]
+    public DateTime CreationTimestamp { get; set; }
+    [BsonElement("clientCode")]
+    [JsonPropertyName("clientCode")]
+    public string ClientCode { get; set; } = "";
+    [BsonElement("profileId")]
+    [JsonPropertyName("profileId")]
+    public int ProfileId { get; set; }
+    [BsonElement("source")]
+    [JsonPropertyName("source")]
+    public string Source { get; set; } = "";
+    [BsonElement("fileType")]
+    [JsonPropertyName("fileType")]
+    public string FileType { get; set; } = "";
+    [BsonElement("fileName")]
+    [JsonPropertyName("fileName")]
+    public string FileName { get; set; } = "";
+    [BsonElement("cacheName")]
+    [JsonPropertyName("cacheName")]
+    public string? CacheName { get; set; }
+    [BsonElement("cacheLocation")]
+    [JsonPropertyName("cacheLocation")]
+    public string? CacheLocation { get; set; }
+}
+
+public record LinkedDocumentContent : LinkedDocument
+{
+    public LinkedDocumentContent() {}
+    public LinkedDocumentContent(LinkedDocument ld, string content) {
+        // automapper would simplify this
+        Id = ld.Id;
+        CreationTimestamp = ld.CreationTimestamp;
+        ClientCode = ld.ClientCode;
+        ProfileId = ld.ProfileId;
+        Source = ld.Source;
+        FileType = ld.FileType;
+        FileName = ld.FileName;
+        CacheName = ld.CacheName;
+        CacheLocation = ld.CacheLocation;
+        Content = content;
+    }
+
+    [BsonElement("content")]
+    [JsonPropertyName("content")]
+    public string? Content { get; set; }
+}
+
+interface IProviderFactory
+{
+    IDocumentProvider? GetProvider(LinkedDocument doc);
+}
+
+interface IDocumentRepository {
+    LinkedDocument GetLinkedDocument(string id, string clientCode, int profileId);
+    string SaveLinkedDocument(string uri, string source, string fileType, string fileName);
+    LinkedDocumentContent GetLinkedDocumentContent(LinkedDocument linkedDocument);
+}
+
+interface IDocumentProvider {
+    bool CanProcess(string source);
+    string GetDocument(LinkedDocument linkedDocument);
+}
+
+class ProviderFactory : IProviderFactory
+{
+    private readonly IEnumerable<IDocumentProvider> _providers;
+
+    public ProviderFactory(IEnumerable<IDocumentProvider> providers)
+    {
+        _providers = providers;
+        WriteLine($"Providers has {providers.Count()}");
+    }
+
+    public IDocumentProvider? GetProvider(LinkedDocument doc)
+    {
+        return _providers.Where( o => o.CanProcess(doc.Source)).FirstOrDefault();
+    }
+}
+
+
+class DocumentRepository : IDocumentRepository
+{
+
+    private readonly IProviderFactory _providers;
+
+    public DocumentRepository(IProviderFactory providers)
+    {
+        _providers = providers;
+    }
+    public LinkedDocument GetLinkedDocument(string id, string clientCode, int profileId)
+    {
+        // retrieve from mongo
+        return new LinkedDocument();
+    }
+
+    public LinkedDocumentContent GetLinkedDocumentContent(LinkedDocument linkedDocument)
+    {
+        var provider = _providers.GetProvider(linkedDocument);
+        if (provider != null)
+        {
+            return new LinkedDocumentContent(linkedDocument, provider?.GetDocument(linkedDocument) ?? "");
+        }
+        return new LinkedDocumentContent();
+    }
+
+    public string SaveLinkedDocument(string uri, string source, string fileType, string fileName)
+    {
+        return "newid";
+    }
+}
+
+public class IsgDocumentProvider : IDocumentProvider {
+    public IsgDocumentProvider(ILogger logger)
+    {}
+    public bool CanProcess(string source) => source.Equals("ISG");
+    public string GetDocument(LinkedDocument linkedDocument)
+    {
+        return this.GetType().Name;
+    }
+}
+
+class S3DocumentProvider : IDocumentProvider {
+    public S3DocumentProvider(ILogger logger)
+    {}
+    public bool CanProcess(string source) => source.Equals("S3");
+    public string GetDocument(LinkedDocument linkedDocument)
+    {
+        return this.GetType().Name;
+    }
+}
+
+var configuration = new ConfigurationBuilder()
+                            .AddJsonFile("appsettings.json", true, true)
+                            .AddEnvironmentVariables()
+                            .Build();
+
+IServiceCollection serviceCollection = new ServiceCollection();
+var services = ConfigureServices(configuration, serviceCollection, Assembly.GetEntryAssembly() );
+
+var repo = services!.GetRequiredService<IDocumentRepository>();
+
+var doc1 = new LinkedDocument() { ClientCode = "USAA", ProfileId = 123, FileType = "jpg", FileName = "junk.jpg", Source = "ISG"};
+var doc2 = doc1 with { Source = "S3" };
+
+var c1 = repo.GetLinkedDocumentContent(doc1);
+WriteLine($"ISG {c1}");
+
+var c2 = repo.GetLinkedDocumentContent(doc2);
+WriteLine($"S3 is {c2}");
+WriteLine($"S3 as json is {System.Text.Json.JsonSerializer.Serialize(c2)}");
+
+
+private static ServiceProvider? ConfigureServices(IConfiguration configuration, IServiceCollection serviceCollection, Assembly? consumerAssembly)
+{
+    serviceCollection.AddSingleton<ILogger>((s) => NullLogger.Instance);
+    serviceCollection.AddSingleton<IDocumentProvider, S3DocumentProvider>();
+    serviceCollection.AddSingleton<IDocumentProvider, IsgDocumentProvider>();
+    serviceCollection.AddSingleton<IDocumentRepository,DocumentRepository>();
+    serviceCollection.AddSingleton<IProviderFactory,ProviderFactory>();
+
+    return serviceCollection.BuildServiceProvider();
+}
