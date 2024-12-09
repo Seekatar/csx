@@ -1,10 +1,14 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
 #!csharp
 
 using static System.Console;
 
 // https://stackoverflow.com/questions/9/how-do-i-calculate-someones-age-based-on-a-datetime-type-birthday
 
-int age(DateTime birthdate, DateTime? today = null) 
+int age(DateTime birthdate, DateTime? today = null)
 {
     if (today is null) {
         today = DateTime.Today;
@@ -48,18 +52,18 @@ WriteLine($"Hi");
 TValue OldIfNull<TValue>(TValue? value, TValue defaultValue) => value ?? defaultValue;
 
 TValue IfNull<TValue>(TValue? value, TValue defaultValue)  {
-    return value == null ? defaultValue : (TValue)value;   
+    return value == null ? defaultValue : (TValue)value;
 }
 TValue NewIfNull<TValue>(Nullable<TValue> value, TValue defaultValue) where TValue : struct {
-    return value == null ? defaultValue : value.Value;   
+    return value == null ? defaultValue : value.Value;
 }
 TValue IfNull2<TValue>(TValue? value, TValue defaultValue) => value ?? defaultValue;
 // {
-//     return value ?? defaultValue;   
+//     return value ?? defaultValue;
 // }    // end helper methods
 
 
-int age(DateTime birthdate, DateTime? today = null) 
+int age(DateTime birthdate, DateTime? today = null)
 {
     WriteLine("age");
     return 1;

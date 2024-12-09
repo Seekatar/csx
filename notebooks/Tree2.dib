@@ -1,3 +1,7 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"}]}}
+
 #!markdown
 
 #### Determine Max Depth
@@ -43,7 +47,7 @@ class Tree {
         return this;
     }
     public int MaxDepth = 0;
-    
+
     public void Dump() {
         WriteLine("-----------------");
         Dump("");
@@ -85,7 +89,7 @@ var fakeRoot = new Tree("fakeRoot")
                     .AddChild(new Tree("L3.2")
                         .AddChild(new Tree("L3.2.1 - Leaf"))
                         )
-                    ) 
+                    )
                 )
             )
         )
@@ -127,7 +131,7 @@ var mid = new Tree("mid")
                         .AddChild(new Tree("midR1")
                             .AddChild(commonEnd)
                             );
-                        
+
 
 fakeRoot = new Tree("fakeRoot")
     .AddChild(new Tree("ARoot")
@@ -139,4 +143,3 @@ fakeRoot = new Tree("fakeRoot")
     ;
 fakeRoot.CalcMax();
 fakeRoot.Dump();
-    
