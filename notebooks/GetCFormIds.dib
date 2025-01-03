@@ -1,0 +1,148 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"languageName":"csharp","name":"csharp"}]}}
+
+#!csharp
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+
+public class StringData
+{
+    public string Value { get; set; }
+}
+public class StringMetaData
+{
+    public string StringId { get; set; }
+    public List<StringData> Strings { get; set; }
+}
+
+/*
+Hierarchy of variable classes in C# codebase
+VariableBaseEx
+    VariableBoolEx
+    VariableDateTimeEx
+        VariableDateEx
+    VariableSelectEx
+        VariableMultiSelectEx
+        VariableSingleConditionalSelectEx
+        VariableSingleSelectEx
+            VariableSingleSelectGroupEx
+            VariableSingleSelectGroupItemEx
+    VariableStaticEx
+    VariableStringEx
+    VariableWithUnitsEx
+        VariableDoubleEx
+        VariableIntEx
+*/
+public class JsonReader
+{
+    // these are from conditional-forms-vscode-ext/src/services/formService.ts, and verified with C# classes above
+    static string[] names = [
+    // StepDto
+    "descriptionId",
+    "nextText",
+    "backText",
+    "nameId",
+
+    // StepDto's VariableBaseEx
+    "displayName",
+    "description",
+    "placeholder",
+    "subtitle",
+    "requiredMessage",
+
+    // VariableDateTimeEx & VariableWithUnitsEx have base plus
+    "minMessage",
+    "maxMessage",
+    // VariableDateTimeEx only
+    "invalidDateMessage",
+    // VariableWithUnitsEx only
+    "units",
+
+    // VariableStringEx has base plus
+    "minLenMessage",
+    "maxLenMessage",
+    "regexMessage",
+
+    // VariableBoolEx has base plus
+    "trueLabel",
+    "falseLabel",
+
+    // VariableSelectEx has base plus multiple labels
+    "label"
+    ];
+
+    public static void FindElementsByName(string filePath, Dictionary<string, (int,string)> elements)
+    {
+        var json = JsonNode.Parse(File.ReadAllText(filePath));
+        var steps = json["steps"];
+        FindElements(steps, elements);
+    }
+
+    private static void FindElements(JsonNode node, Dictionary<string, (int,string)> elements)
+    {
+        if (node is JsonObject jsonObject)
+        {
+            foreach (var property in jsonObject)
+            {
+                if (names.Contains(property.Key) && property.Value is JsonValue jsonValue && jsonValue.TryGetValue(out string value))
+                {
+                    if (Guid.TryParse(value, out _)) // optional values may have empty strings
+                    {
+                        if (elements.ContainsKey(value))
+                        {
+                            elements[value] = new (elements[value].Item1+1, property.Key);
+                        }
+                        else
+                        {
+                            elements.Add(value, new(1, property.Key));
+                        }
+                    }
+                    else
+                    {
+                        // Console.WriteLine($"Skipping {property.Key} since not Guid: '{value}'");
+                    }
+                }
+                FindElements(property.Value, elements);
+            }
+        }
+        else if (node is JsonArray jsonArray)
+        {
+            foreach (var item in jsonArray)
+            {
+                FindElements(item, elements);
+            }
+        }
+    }
+}
+
+var elements = new Dictionary<string, (int,string)>();
+
+var files = Directory.EnumerateFiles("/Users/jwallace/code/ConditionalForms/src/test/hras", "*.json");
+// var files = Directory.EnumerateFiles("/Users/jwallace/temp/cforms-lifepoint", "*.json");
+// var files = Directory.EnumerateFiles("/Users/jwallace/temp/cforms", "*.json");
+foreach( var file in files)
+{
+    Console.WriteLine($">>>> Processing {file}");
+    JsonReader.FindElementsByName(file, elements);
+}
+
+var stringData = System.Text.Json.JsonSerializer.Deserialize<List<StringMetaData>>(
+    File.ReadAllText("/var/folders/wt/48syr7hn5qs3qw_vbs0gl3l00000gn/T/cforms/Preprod__Scranton Health_languageMaps.json"),
+    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+Console.WriteLine($"\n>>>> Read strings file and found {stringData.Count}");
+
+Console.WriteLine($"\n>>>> Found {elements.Count} elements in {files.Count()} files");
+foreach (var element in elements.OrderByDescending(o => o.Value.Item1))
+{
+    var value = stringData.FirstOrDefault(s => s.StringId == element.Key)?.Strings.FirstOrDefault()?.Value?.Replace("\n", " ")?.Replace("\r", " ");
+    if (value?.Length > 40)
+    {
+        value = value.Substring(0, 40);
+    }
+    Console.WriteLine($"{element.Key}: {element.Value.Item1} {element.Value.Item2} '{value}'");
+}

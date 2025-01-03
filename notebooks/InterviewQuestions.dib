@@ -4,6 +4,33 @@
 
 #!markdown
 
+# Linq
+
+* What is expected output of the numbers?
+
+#!csharp
+
+using static System.Console;
+
+var sqlTable = new List<string>() {"a", "b", "c", "a"};
+
+WriteLine("1");
+var groups = sqlTable.GroupBy(x => { WriteLine("2"); return x; });
+WriteLine("3");
+var select = groups.Select(x => { WriteLine( "4"); return new { Key = x.Key, Count = x.Count() }; });
+WriteLine("5");
+var result = select.OrderByDescending(x => { WriteLine( "6"); return x.Count; } );
+WriteLine("7");
+
+foreach (var item in result)
+{
+    DoSomething(item);
+}
+
+void DoSomething(object item){}
+
+#!markdown
+
 # Bug 1
 
 * remove 'a' from the list
