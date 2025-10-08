@@ -1,0 +1,59 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"languageName":"csharp","name":"csharp"}]}}
+
+#!csharp
+
+#r "nuget: JsonSchema.Net"
+using System.Text.Json.Nodes;
+using Json.Schema;
+
+var schema = """
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "https://example.com/product.schema.json",
+      "title": "Product",
+      "description": "A product from Acme's catalog",
+      "type": "object",
+      "properties": {
+        "productName": {
+          "description": "Name of the product",
+          "type": "string"
+        },
+        "price": {
+          "description": "The price of the product",
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [ "productName", "price" ]
+    }
+    """;
+
+var invalidJson = """
+    {
+        "productName": "test",
+        "price": -1
+    }
+    """;
+
+// Validate the JSON data against the JSON schema
+var jsonSchema = JsonSchema.FromText(schema);
+var result = jsonSchema.Evaluate(JsonNode.Parse(invalidJson), new EvaluationOptions { OutputFormat = OutputFormat.List });
+if (!result.IsValid)
+{
+    foreach (var e in result.Details.Where(d => d.IsValid == false && (d.Errors?.Any() ?? false)))
+    {
+        Console.WriteLine( $"Error at {e.InstanceLocation}"); // path to node in document
+        Console.WriteLine( $" EvaluationPath in schema {e.EvaluationPath}"); // path to node in schema
+        Console.WriteLine( $" SchemaLocation {e.SchemaLocation}"); // full with url
+        foreach ( var er in e.Errors)
+        {
+            Console.WriteLine($"{er.Key} -> {er.Value}");
+        }
+    }
+}
+else
+{
+    Console.WriteLine("Valid document");
+}

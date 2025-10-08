@@ -76,14 +76,15 @@ public class JsonReader
     "label"
     ];
 
-    public static void FindElementsByName(string filePath, Dictionary<string, (int,string)> elements)
+    public void FindElementsByName(string filePath, Dictionary<string, (int,string)> elements)
     {
+        var thisFile = new HashSet<string>();
         var json = JsonNode.Parse(File.ReadAllText(filePath));
-        var steps = json["steps"];
-        FindElements(steps, elements);
+        var steps = json; // ["steps"];
+        FindElements(steps, elements, thisFile);
     }
 
-    private static void FindElements(JsonNode node, Dictionary<string, (int,string)> elements)
+    private void FindElements(JsonNode node, Dictionary<string, (int,string)> elements, HashSet<string> thisFile)
     {
         if (node is JsonObject jsonObject)
         {
@@ -95,26 +96,28 @@ public class JsonReader
                     {
                         if (elements.ContainsKey(value))
                         {
-                            elements[value] = new (elements[value].Item1+1, property.Key);
+                            if (!thisFile.Contains(value))
+                                elements[value] = new (elements[value].Item1+1, property.Key);
                         }
                         else
                         {
                             elements.Add(value, new(1, property.Key));
+                            thisFile.Add(value);
                         }
                     }
                     else
                     {
-                        // Console.WriteLine($"Skipping {property.Key} since not Guid: '{value}'");
+                        Console.WriteLine($"Skipping {property.Key} since not Guid: '{value}'");
                     }
                 }
-                FindElements(property.Value, elements);
+                FindElements(property.Value, elements, thisFile);
             }
         }
         else if (node is JsonArray jsonArray)
         {
             foreach (var item in jsonArray)
             {
-                FindElements(item, elements);
+                FindElements(item, elements, thisFile);
             }
         }
     }
@@ -122,13 +125,15 @@ public class JsonReader
 
 var elements = new Dictionary<string, (int,string)>();
 
-var files = Directory.EnumerateFiles("/Users/jwallace/code/ConditionalForms/src/test/hras", "*.json");
+// var files = Directory.EnumerateFiles("/Users/jwallace/code/ConditionalForms/src/test/hras", "*.json");
 // var files = Directory.EnumerateFiles("/Users/jwallace/temp/cforms-lifepoint", "*.json");
+var files = Directory.EnumerateFiles("/Users/jwallace/temp/cforms-localhost", "*.json");
+// var files = Directory.EnumerateFiles("/Users/jwallace/temp/cforms-localhost", "1f0109a7-8232-428a-aa34-da7438682a8e.json");
 // var files = Directory.EnumerateFiles("/Users/jwallace/temp/cforms", "*.json");
 foreach( var file in files)
 {
     Console.WriteLine($">>>> Processing {file}");
-    JsonReader.FindElementsByName(file, elements);
+    new JsonReader().FindElementsByName(file, elements);
 }
 
 var stringData = System.Text.Json.JsonSerializer.Deserialize<List<StringMetaData>>(
@@ -137,6 +142,7 @@ var stringData = System.Text.Json.JsonSerializer.Deserialize<List<StringMetaData
 Console.WriteLine($"\n>>>> Read strings file and found {stringData.Count}");
 
 Console.WriteLine($"\n>>>> Found {elements.Count} elements in {files.Count()} files");
+var i = 1;
 foreach (var element in elements.OrderByDescending(o => o.Value.Item1))
 {
     var value = stringData.FirstOrDefault(s => s.StringId == element.Key)?.Strings.FirstOrDefault()?.Value?.Replace("\n", " ")?.Replace("\r", " ");
@@ -144,5 +150,5 @@ foreach (var element in elements.OrderByDescending(o => o.Value.Item1))
     {
         value = value.Substring(0, 40);
     }
-    Console.WriteLine($"{element.Key}: {element.Value.Item1} {element.Value.Item2} '{value}'");
+    Console.WriteLine($"{i++,3} {element.Key}: {element.Value.Item1} {element.Value.Item2} '{value}'");
 }
