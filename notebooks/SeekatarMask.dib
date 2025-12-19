@@ -1,0 +1,19 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"name":"csharp","languageName":"csharp"},{"name":"fsharp","languageName":"F#","aliases":["f#","fs"]},{"name":"html","languageName":"HTML"},{"name":"http","languageName":"HTTP"},{"name":"javascript","languageName":"JavaScript","aliases":["js"]},{"name":"mermaid","languageName":"Mermaid"},{"name":"pwsh","languageName":"PowerShell","aliases":["powershell"]},{"name":"value"}]}}
+
+#!csharp
+
+#r nuget:Seekatar.Tools,0.2.4
+#r nuget:Seekatar.OptionToStringGenerator,0.3.5
+
+using Seekatar;
+
+var x = Seekatar.Mask.MaskRegex("testSecret=123", ".*Secret=(.*)");
+Console.WriteLine(x);
+
+x = Seekatar.Mask.MaskRegex("testSecret=123", ".*Secret=(.*)", mask:(s) => s.Replace(s, $"****{s}***"));
+Console.WriteLine(x);
+
+x = Seekatar.Mask.MaskRegex("testSect=123", ".*Secret=(.*)", mask:(s) => s.Replace(s, $"****{s}***"));
+Console.WriteLine(x);
