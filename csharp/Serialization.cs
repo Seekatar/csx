@@ -1,0 +1,63 @@
+using System.Text.Json;
+using static System.Console;
+using System.Text.Json.Serialization;
+
+var x = JsonSerializer.Serialize(new A(), new JsonSerializerOptions() { Converters =
+    {
+        new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
+    }});
+WriteLine($"{x}");
+var a = JsonSerializer.Deserialize<A>(x);
+WriteLine($"{JsonSerializer.Serialize(a)}");
+
+x = Newtonsoft.Json.JsonConvert.SerializeObject(new A());
+WriteLine($"{x}");
+a = Newtonsoft.Json.JsonConvert.DeserializeObject<A>(x);
+WriteLine($"{Newtonsoft.Json.JsonConvert.SerializeObject(a)}");
+
+a = Newtonsoft.Json.JsonConvert.DeserializeObject<A>("{\"E1\":\"a\"}");
+WriteLine($"{Newtonsoft.Json.JsonConvert.SerializeObject(a)}");
+
+a = Newtonsoft.Json.JsonConvert.DeserializeObject<A>("{\"E1\":\"a\",\"DefaultText\":\"Next\"}");
+WriteLine($"{Newtonsoft.Json.JsonConvert.SerializeObject(a)}");
+
+// Cell 2 - Newtonsoft tolerates newlines in strings
+
+// newtownsoft tolerates newlines in strings
+var s = """
+                {
+                    "E1":"a",
+                    "DefaultText":"Ne
+                    xt"
+                }
+        """;
+WriteLine(s);
+// similar
+// s = "{\"E1\":\"a\",\"DefaultText\":\"Ne\r\nxt\"}";
+var a2 = Newtonsoft.Json.JsonConvert.DeserializeObject<A2>(s);
+WriteLine($"DefaultText: {a2.DefaultText}");
+// can't use either \r or \n in the string
+WriteLine(s);
+a2 = System.Text.Json.JsonSerializer.Deserialize<A2>(s);
+WriteLine(s);
+WriteLine($"DefaultText: {a2.DefaultText}");
+
+class A
+{
+    public enum E {
+        a,b,c
+    }
+    public TimeSpan TS { get; set; } = TimeSpan.FromMinutes(5);
+    public E E1 = E.b;
+    public string DefaultText = "This is default value";
+}
+
+class A2
+{
+    public enum E {
+        a,b,c
+    }
+    public TimeSpan TS { get; set; } = TimeSpan.FromMinutes(5);
+    public E E1 = E.b;
+    public string DefaultText {get;set;} = "This is default value";
+}

@@ -1,0 +1,24 @@
+using static System.Console;
+
+C.DoIt("prefix", "a", "b", "c");
+C.DoIt("prefix", "b");
+
+var a = new[] { "a", "b", "c" };
+C.DoIt("prefix", a);
+
+var b = new List<string> { "a", "b", "c" };
+C.DoIt("prefix", b);
+
+C.DoIt("prefix", b.ToArray());
+
+class C
+{
+    public static void DoIt(string s, params object[] args)
+    {
+        WriteLine(s);
+        foreach (var arg in args)
+        {
+            WriteLine($"> {arg}");
+        }
+    }
+}

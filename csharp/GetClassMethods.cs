@@ -1,0 +1,29 @@
+#nullable enable
+using System.Reflection;
+using static System.Console;
+
+var types = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(VariableBase))).ToList();
+
+foreach ( var type in types ) {
+    WriteLine(type.Name);
+}
+
+class VariableDto {}
+class FormVariable {}
+
+class VariableBase {
+
+}
+
+class VariableSelectBase : VariableBase {
+
+}
+
+class VariableString: VariableBase {
+    FormVariable? ConvertVariable(VariableDto variable) { return null;}
+    VariableDto? ConvertVariable(FormVariable variable) { return null;}
+}
+
+class VariableSingleSelect: VariableSelectBase {
+
+}
