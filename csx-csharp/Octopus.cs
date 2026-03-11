@@ -1,10 +1,10 @@
-#r "C:\Development\site-vacuum\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll"
-#r "C:\Development\site-vacuum\packages\Octopus.Client.4.0.1\lib\net45\Octopus.Client.dll"
+// Requires DLL: Newtonsoft.Json.dll
+// Requires DLL: Octopus.Client.dll
 
 using Octopus.Client;
 
 var server = "http://octopus/";
-var apiKey = "API-BOGUS";
+var apiKey = "BOGUS";
 var octopusEndpoint = new OctopusServerEndpoint(server, apiKey);
 System.Console.WriteLine("1");
 var octopusRepository = new OctopusRepository(octopusEndpoint);

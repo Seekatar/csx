@@ -1,0 +1,19 @@
+using static System.Console;
+
+var tags = new List<TagItem>() { new ("HRA"), new ("HRA1"), new ("HRA2")
+, new ("HRA7")
+ };
+var keys = new List<string>() {"HRA", "HRA1", "HRA2", "HRA3"};
+
+var e = tags.ExceptBy(keys, x => x.Tag).ToList();
+foreach ( var item in e )
+{
+    WriteLine(item.Tag);
+}
+
+class TagItem
+{
+    public TagItem(string tag) { Tag = tag; }
+    public Guid TagId { get; set; }
+    public string Tag { get; set; } = "";
+}

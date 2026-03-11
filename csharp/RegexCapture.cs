@@ -1,0 +1,92 @@
+using static System.Console;
+using System.Text.RegularExpressions;
+using System.Text.Json;
+
+Regex daysRegex = new("^(-?\\d+)d");
+Regex noCapture = new("^-?\\d+d");
+var matches = daysRegex.Matches("10d");
+WriteLine(matches[0].Groups[1]);
+WriteLine(daysRegex.IsMatch("30d"));
+WriteLine(daysRegex.IsMatch("d"));
+WriteLine(noCapture.IsMatch("30d"));
+WriteLine(noCapture.IsMatch("d"));
+WriteLine(DateTime.UtcNow + TimeSpan.FromDays(Convert.ToInt32(matches[0].Groups[1].Value)));
+
+matches = daysRegex.Matches("-10d");
+WriteLine(matches[0].Groups[1]);
+WriteLine(DateTime.UtcNow + TimeSpan.FromDays(Convert.ToInt32(matches[0].Groups[1].Value)));
+
+matches = daysRegex.Matches("d");
+if (matches.Count > 0 )
+    WriteLine(matches[0].Groups[1]);
+else
+    WriteLine("No");
+
+matches = daysRegex.Matches("");
+if (matches.Count > 0 )
+    WriteLine(matches[0].Groups[1]);
+else
+    WriteLine("No");
+
+{
+    var expression = "StringId(MyString)  StringId(MyStringZZZ)";
+
+    Regex _regex = new ("StringId\\((\\w+)\\)");
+
+
+    var matches2 =  _regex.Matches(expression);
+    foreach (var m in matches2.Select(o => o.Groups))
+    {
+        WriteLine(m[1].Value);
+    }
+}
+
+{
+    var host = "featuresapi-test-sc.loyalhealth.internal";
+
+    Regex hostRegex = new(@"-(?<environment>\w+)-\w+\.loyalhealth\.internal$", RegexOptions.Compiled);
+    var matches2 =  hostRegex.Matches(host);
+    if (matches2.Count > 0)
+    {
+        var environment = matches2[0].Groups["environment"].Value;
+        WriteLine(environment);
+    }
+    foreach (var m in matches2.Select(o => o.Groups))
+    {
+        WriteLine(m[1].Value);
+    }
+}
+
+{
+    interface IMyInterface
+    {
+        string BaseString { get; set; }
+    }
+
+    class MyBaseClass
+    {
+        public string BaseString { get; set; }
+    }
+
+    class MyClass : MyBaseClass, IMyInterface
+    {
+        public MyClass ()
+        {
+            BaseString = "BaseString";
+        }
+        public string MyString { get; set; }
+    }
+
+    var l = new List<MyBaseClass>() { new MyClass(), new MyBaseClass() };
+
+    foreach ( var i in l.OfType<IMyInterface>()) {
+        WriteLine("OfType "+i.BaseString);
+    }
+    foreach ( var i in l.Where( o => o.GetType().IsAssignableTo(typeof(IMyInterface)))) {
+        WriteLine("AssignableTo "+i.BaseString);
+    }
+
+    foreach ( var i in l.Where( o => typeof(IMyInterface).IsAssignableFrom(o.GetType()))) {
+        WriteLine("AssignableFrom "+i.BaseString);
+    }
+}

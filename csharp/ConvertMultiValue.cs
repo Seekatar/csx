@@ -1,0 +1,8 @@
+var value = "1,2,3"; // new int[ ] {1,2,3};
+
+var x = value.ToString().Split(',').Select(o => Convert.ToInt32(o));
+
+Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(x));
+
+var s = "2022-1-1";
+DateOnly dt = DateOnly.FromDateTime(Convert.ToDateTime(s));
